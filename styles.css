@@ -1,0 +1,22 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body  {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    pointer-events: none;
+    user-select: none;
+    touch-action: none;
+    outline: none;
+}
+
+canvas {
+    /* border: 1px solid red; */
+}
+
+/* #e45454 RED */
+/* #7962a9 LOTTO PURPLE */

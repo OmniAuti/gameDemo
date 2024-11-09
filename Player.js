@@ -1,9 +1,14 @@
 export default class Player {
 
+
+    MOVE_ANIMATION_TIMER = 20;
+    moveAnimationTimer = this.MOVE_ANIMATION_TIMER;
+    movingImages = [];
+
     moveUp = false;
     moveDown = false;
     laneIndex = 0;
-    MOVE_SPEED = 0.05;
+    MOVE_SPEED = 0.1;
 
     constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio) {
 
@@ -21,9 +26,18 @@ export default class Player {
         this.startingPosition = this.canvas.height - this.height - 20 * scaleRatio; 
         this.laneHeight = this.canvas.height * .07;
 
+        const movingImage1 = new Image();
+        movingImage1.src = "./images/player_move_1.png";
+        const movingImage2 = new Image();
+        movingImage2.src = "./images/player_move_2.png";
+
+        this.movingImages.push(movingImage1);
+        this.movingImages.push(movingImage2);
+
         this.straightLaneImage = new Image();
         this.straightLaneImage.src = "./images/RedBike.png";
         this.image = this.straightLaneImage;
+        
 
         this.turnUpImage = new Image();
         this.turnUpImage.src = "./images/RedBikeTurnLeft.png";
@@ -66,13 +80,13 @@ export default class Player {
     }
 
     update(gameSpeed, frameTimeDelta) {
+        this.moving(gameSpeed, frameTimeDelta)
+
         if (this.moveUp) {
             this.image = this.turnUpImage;
         } else if (this.moveDown) {
             this.image = this.turnDownImage;
-        }  else {
-            this.image = this.straightLaneImage;
-        }
+        }  
 
         this.turn(frameTimeDelta);
     }
@@ -89,5 +103,16 @@ export default class Player {
         } else if (this.moveDown && this.y < this.startingPosition - this.laneHeight * this.laneIndex) {
             this.y += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
         }
+    }
+    moving(gameSpeed, frameTimeDelta) {
+        if (this.moveAnimationTimer <= 0) {
+            if (this.image === this.movingImages[0]) {
+                this.image = this.movingImages[1]
+            } else {
+                this.image = this.movingImages[0]
+            }
+            this.moveAnimationTimer = this.MOVE_ANIMATION_TIMER;
+        }
+        this.moveAnimationTimer -= frameTimeDelta * gameSpeed;
     }
 }

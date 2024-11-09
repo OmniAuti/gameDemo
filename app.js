@@ -29,6 +29,8 @@ let crowd = null;
 let scaleRatio = null;
 let previousTime = null;
 let gameSpeed = GAME_SPEED_START;
+// will change when game is more finished
+let start = true;
 
 function createSprites() {
     const playerWidthInGame = PLAYER_WIDTH * scaleRatio;
@@ -88,13 +90,13 @@ function gameLoop(currentTime) {
     clearScreen();
 
     // UPDATE GAME OBJECTS
-    // if (!gameOver && !waitingToStart) {
+    if (start) {
         ground.update(gameSpeed, frameTimeDelta);
         crowd.update(gameSpeed, frameTimeDelta);
         player.update(gameSpeed, frameTimeDelta, scaleRatio);
         // score.update(frameTimeDelta);
         // updateGameSpeed(frameTimeDelta);
-    // }
+    }
 
     // DRAW GAME OBJECTS
     ctx.fillStyle = GRASS_COLOR;

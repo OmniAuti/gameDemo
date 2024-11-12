@@ -1,6 +1,7 @@
 import Player from "./Player.js";
 import Ground from "./Ground.js";
 import Crowd from "./Crowd.js";
+import ObstacleController from "./ObstacleController.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -22,11 +23,19 @@ const GROUND_CROWD_OBSTACLE_SPEED = 0.25;
 
 const GRASS_COLOR = "#84bc2c";
 
+
+const OBSTACLE_CONFIG = [
+    {width: 24 / 1.5, height: 13/1.5, image: 'images/mudOne.png'},
+    {width: 24 / 1.5, height: 13/1.5, image: 'images/mudTwo.png'},
+]
+
 // GAME OBJECTS
 let player = null;
 let ground = null;
 let crowd = null;
+let obstacleController = null;
 
+let resizeCheck = null;
 let scaleRatio = null;
 let previousTime = null;
 let gameSpeed = GAME_SPEED_START;
@@ -48,6 +57,18 @@ function createSprites() {
     player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX)
     crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_CROWD_OBSTACLE_SPEED, scaleRatio)
     ground = new Ground(ctx, groundWidthInGame, groundHeightInGame, GROUND_CROWD_OBSTACLE_SPEED, scaleRatio)
+
+    const obstacleImages = OBSTACLE_CONFIG.map(o => {
+        const image = new Image();
+        image.src = o.image;
+        return {
+            image:image,
+            width: o.width * scaleRatio,
+            height: o.height * scaleRatio,
+        };
+    });
+
+    obstacleController = new ObstacleController(ctx, obstacleImages, scaleRatio, GROUND_CROWD_OBSTACLE_SPEED);
 }
 
 function setScreen() {
@@ -55,10 +76,17 @@ function setScreen() {
     canvas.width = GAME_WIDTH * scaleRatio
     canvas.height = GAME_HEIGHT * scaleRatio
     createSprites();
+    resizeCheck = null;
 }
 
 setScreen()
-window.addEventListener('resize', () => setTimeout(setScreen, 100));
+window.addEventListener('resize', () => {
+    if (resizeCheck === null) {
+        setTimeout(setScreen, 250)
+        resizeCheck = 1;
+    }
+})
+
 
 if (screen.orientation) {
     screen.orientation.addEventListener('change', setScreen);
@@ -84,9 +112,6 @@ function updateGameSpeed() {
         gameSpeed = playerSpeed;
 }
 
-// let test = player.increase(8);
-// console.log(test)
-
 function gameLoop(currentTime) {
     if (previousTime === null) {
         previousTime = currentTime;
@@ -98,13 +123,17 @@ function gameLoop(currentTime) {
 
     clearScreen();
 
+    if (obstacleController.collideWith(player)) {
+        player.speedUp = false;     
+    }
     // UPDATE GAME OBJECTS
     if (start) {
         ground.update(gameSpeed, frameTimeDelta);
         crowd.update(gameSpeed, frameTimeDelta);
-        player.update(gameSpeed, frameTimeDelta, scaleRatio);
         // score.update(frameTimeDelta);
         updateGameSpeed();
+        obstacleController.update(gameSpeed, frameTimeDelta);
+        player.update(gameSpeed, frameTimeDelta, scaleRatio);
     }
 
     // DRAW GAME OBJECTS
@@ -112,6 +141,9 @@ function gameLoop(currentTime) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ground.draw();
     crowd.draw();
+    obstacleController.draw();
+
+    // PLAYER ALWAYS DRAW LAST SO ITS OVER ALL OTHER PIXELS
     player.draw();
 
     requestAnimationFrame(gameLoop);

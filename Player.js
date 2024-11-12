@@ -1,5 +1,6 @@
-export default class Player {
+import ObstacleController from "./ObstacleController.js";
 
+export default class Player {
 
     MOVE_ANIMATION_TIMER = 20;
     moveAnimationTimer = this.MOVE_ANIMATION_TIMER;
@@ -91,7 +92,7 @@ export default class Player {
         }
     }
 
-    increaseSpeed(gameSpeed, frameTimeDelta) {
+    increaseSpeed(frameTimeDelta) {
         if (this.speedUp === true && this.x < this.canvas.width * .25) {
             // SPEED_INCREMENT
             this.x += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
@@ -101,7 +102,7 @@ export default class Player {
         }
     }
 
-    decreaseSpeed(gameSpeed, frameTimeDelta) {
+    decreaseSpeed(frameTimeDelta) {
         if (this.speedUp === false && this.x > 20) {
             this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
             if (this.gameSpeed > this.GAME_SPEED_START) {
@@ -110,18 +111,15 @@ export default class Player {
         }
     }
 
-    // playerSpeed(gameSpeed) {
-    //     return gameSpeed;
-    // }
-
     draw() {
         this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
     }
 
     update(gameSpeed, frameTimeDelta) {
+
         this.moving(gameSpeed, frameTimeDelta)
-        this.increaseSpeed(gameSpeed, frameTimeDelta)
-        this.decreaseSpeed(gameSpeed, frameTimeDelta)
+        this.increaseSpeed(frameTimeDelta)
+        this.decreaseSpeed(frameTimeDelta)
 
         if (this.moveLeft) {
             this.image = this.turnUpImage;

@@ -6,6 +6,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const GAME_SPEED_START = .5;
+const GAME_SPEED_MAX = .75;
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 200;
@@ -44,7 +45,7 @@ function createSprites() {
     const groundWidthInGame = GROUND_WIDTH * scaleRatio;
     const groundHeightInGame = GROUND_HEIGHT * scaleRatio;
 
-    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio)
+    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX)
     crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_CROWD_OBSTACLE_SPEED, scaleRatio)
     ground = new Ground(ctx, groundWidthInGame, groundHeightInGame, GROUND_CROWD_OBSTACLE_SPEED, scaleRatio)
 }
@@ -72,11 +73,19 @@ function getScaleRatio() {
     } else {
         return screenHeight / GAME_HEIGHT;
     }
-}
+} 
 
 function clearScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+function updateGameSpeed() {
+    let playerSpeed = player.playerSpeed;
+        gameSpeed = playerSpeed;
+}
+
+// let test = player.increase(8);
+// console.log(test)
 
 function gameLoop(currentTime) {
     if (previousTime === null) {
@@ -95,7 +104,7 @@ function gameLoop(currentTime) {
         crowd.update(gameSpeed, frameTimeDelta);
         player.update(gameSpeed, frameTimeDelta, scaleRatio);
         // score.update(frameTimeDelta);
-        // updateGameSpeed(frameTimeDelta);
+        updateGameSpeed();
     }
 
     // DRAW GAME OBJECTS

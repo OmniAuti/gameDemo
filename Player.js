@@ -5,12 +5,15 @@ export default class Player {
     moveAnimationTimer = this.MOVE_ANIMATION_TIMER;
     movingImages = [];
 
-    moveUp = false;
-    moveDown = false;
+    moveLeft = false;
+    moveRight = false;
+    speedUp = false;
+    playerSpeed = 0;
     laneIndex = 0;
     MOVE_SPEED = 0.1;
+    SPEED_INCREMENT = 0.01;
 
-    constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio) {
+    constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX) {
 
         this.ctx = ctx;
         this.canvas = ctx.canvas;
@@ -19,12 +22,18 @@ export default class Player {
         this.minJumpHeight = minJumpHeight;
         this.maxJumpHeight = maxJumpHeight;
         this.scaleRatio = scaleRatio;
+        this.gameSpeed = gameSpeed;
+        this.GAME_SPEED_START = GAME_SPEED_START;
+        this.GAME_SPEED_MAX = GAME_SPEED_MAX;
 
-        this.x = 10 * scaleRatio;
+        this.x = 20 * scaleRatio;
         this.y = this.canvas.height - this.height - 20 * scaleRatio; 
 
-        this.startingPosition = this.canvas.height - this.height - 20 * scaleRatio; 
+        this.startingPositionX = 20 * scaleRatio; 
+        this.startingPositionY = this.canvas.height - this.height - 20 * scaleRatio; 
         this.laneHeight = this.canvas.height * .07;
+
+        this.playerSpeed = this.gameSpeed;
 
         const movingImage1 = new Image();
         movingImage1.src = "./images/player_move_1.png";
@@ -54,25 +63,55 @@ export default class Player {
     }
     // movement
     keydown = (e) => {
-        if (this.moveUp || this.moveDown) return;
+
+        if (e.code === "ArrowRight") {
+            this.speedUp = true;
+        } else if (e.code === "ArrowLeft") {
+            this.speedUp = false;
+        }
+        //
+        if (this.moveLeft || this.moveRight) return;
         //
         if (e.code === "ArrowUp") {
             if (this.laneIndex >= 3) return;
-            this.moveUp = true;
+            this.moveLeft = true;
             this.laneIndex += 1;
         } else if (e.code === "ArrowDown") {
             if (this.laneIndex <= 0) return;
-            this.moveDown = true;
+            this.moveRight = true;
             this.laneIndex -= 1;
+        } 
+    }
+
+    keyup = (e) => {
+        if (e.code === "ArrowRight") {
+            this.speedUp = false;
+        } else if (e.code === "ArrowLeft") {
+            this.speedUp = false;
         }
     }
 
-    // keyup = (e) => {
-    //     if (e.code === "ArrowUp") {
-    //             this.moveUp = false;
-    //     } else if (e.code === "ArrowDown") {
-    //             this.moveDown = false;
-    //     }
+    increaseSpeed(gameSpeed, frameTimeDelta) {
+        if (this.speedUp === true && this.x < this.canvas.width * .25) {
+            // SPEED_INCREMENT
+            this.x += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
+            if (this.gameSpeed < this.GAME_SPEED_MAX) {
+                this.playerSpeed = this.gameSpeed += this.SPEED_INCREMENT;
+            }
+        }
+    }
+
+    decreaseSpeed(gameSpeed, frameTimeDelta) {
+        if (this.speedUp === false && this.x > 20) {
+            this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
+            if (this.gameSpeed > this.GAME_SPEED_START) {
+                this.playerSpeed = this.gameSpeed -= this.SPEED_INCREMENT;
+            }
+        }
+    }
+
+    // playerSpeed(gameSpeed) {
+    //     return gameSpeed;
     // }
 
     draw() {
@@ -81,10 +120,12 @@ export default class Player {
 
     update(gameSpeed, frameTimeDelta) {
         this.moving(gameSpeed, frameTimeDelta)
+        this.increaseSpeed(gameSpeed, frameTimeDelta)
+        this.decreaseSpeed(gameSpeed, frameTimeDelta)
 
-        if (this.moveUp) {
+        if (this.moveLeft) {
             this.image = this.turnUpImage;
-        } else if (this.moveDown) {
+        } else if (this.moveRight) {
             this.image = this.turnDownImage;
         }  
 
@@ -92,18 +133,19 @@ export default class Player {
     }
 
     turn(frameTimeDelta) {
-        if (this.moveUp && this.y <= Math.ceil(this.startingPosition - this.laneHeight * this.laneIndex)) {
-            this.moveUp = false;
-        }  else if (this.moveDown && this.y >= Math.floor(this.startingPosition - this.laneHeight * this.laneIndex)) {
-            this.moveDown = false;
+        if (this.moveLeft && this.y <= Math.ceil(this.startingPositionY - this.laneHeight * this.laneIndex)) {
+            this.moveLeft = false;
+        }  else if (this.moveRight && this.y >= Math.floor(this.startingPositionY - this.laneHeight * this.laneIndex)) {
+            this.moveRight = false;
         }
 
-        if (this.moveUp && this.y > this.startingPosition - this.laneHeight * this.laneIndex) {
+        if (this.moveLeft && this.y > this.startingPositionY - this.laneHeight * this.laneIndex) {
             this.y -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
-        } else if (this.moveDown && this.y < this.startingPosition - this.laneHeight * this.laneIndex) {
+        } else if (this.moveRight && this.y < this.startingPositionY - this.laneHeight * this.laneIndex) {
             this.y += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
         }
     }
+
     moving(gameSpeed, frameTimeDelta) {
         if (this.moveAnimationTimer <= 0) {
             if (this.image === this.movingImages[0]) {

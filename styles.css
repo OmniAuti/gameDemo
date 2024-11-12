@@ -12,6 +12,7 @@ body  {
     user-select: none;
     touch-action: none;
     outline: none;
+    background-color: #000;
 }
 
 canvas {

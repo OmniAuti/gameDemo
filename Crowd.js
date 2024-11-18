@@ -25,7 +25,7 @@ export default class Crowd {
     }
 
     update(gameSpeed, frameTimeDelta) {
-        this.x -= gameSpeed * frameTimeDelta * this.speed * this.scaleRatio;
+        this.x -= (gameSpeed * 0.9) * frameTimeDelta * this.speed * this.scaleRatio;
     }
 
     reset() {

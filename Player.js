@@ -127,7 +127,9 @@ export default class Player {
     }
 
     update(gameSpeed, frameTimeDelta) {
+        // USE THIS STOP CONTROLS AND DO WHEELY
         console.log(this.finishLine)
+
         this.moving(gameSpeed, frameTimeDelta)
         this.increaseSpeed(frameTimeDelta)
         this.decreaseSpeed(frameTimeDelta)

@@ -2,6 +2,7 @@ import Player from "./Player.js";
 import PlayerShadow from "./PlayerShadow.js";
 import Ground from "./Ground.js";
 import FinishLine from "./FinishLine.js";
+import StartingMark from "./StartingMark.js";
 import Crowd from "./Crowd.js";
 import ObstaclePotholeController from "./ObstaclePotholeController.js";
 import ObstacleRampController from "./ObstacleRampController.js";
@@ -21,6 +22,8 @@ const MAX_JUMP_HEIGHT = GAME_HEIGHT / 4;
 const MIN_JUMP_HEIGHT = GAME_HEIGHT / 2;
 const GROUND_WIDTH = 5080;
 const GROUND_HEIGHT = 70;
+const STARTING_MARK_WIDTH = 7;
+const STARTING_MARK_HEIGHT = 10;
 const FINISH_WIDTH = 1000;
 const LANE_HEIGHT = 11;
 const CURB_HEIGHT = 7;
@@ -34,12 +37,12 @@ const SHADOW_HEIGHT = 5;
 const GRASS_COLOR = "#b2b2b1";
 
 const OBSTACLE_POTHOLE_CONFIG = [
-    {width: 24 / 1.5, height: 13/1.5, image: 'images/obstacle_potholeOne.png'},
-    {width: 24 / 1.5, height: 13/1.5, image: 'images/obstacle_potholeTwo.png'},
+    {width: 24 / 1.5, height: 13 / 1.5, image: 'images/obstacle_potholeOne.png'},
+    {width: 24 / 1.5, height: 13 / 1.5, image: 'images/obstacle_potholeTwo.png'},
 ]
 
 const OBSTACLE_RAMP_CONFIG = [
-    {width: 24 / 1.5, height: 57/1.5, image: 'images/rampA.png'},
+    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/rampA.png'},
 ]
 
 // GAME OBJECTS
@@ -47,6 +50,7 @@ let player = null;
 let playerShadow = null;
 let ground = null;
 let finishLine = null;
+let startingMark = null
 let finishTimeout = null;
 let crowd = null;
 let obstaclePotholeController = null;
@@ -63,6 +67,10 @@ let finish = false;
 let gameOver = false;
 let hasAddEventListenersForRestart = false;
 let waitingToStart = true;
+let countdown = false;
+let countdownActive = false;
+let countdownNum = 3;
+
 // SCREEN
 function setScreen() {
     scaleRatio = getScaleRatio();
@@ -94,16 +102,20 @@ function createSprites() {
     const crowdHeightInGame = CROWD_HEIGHT * scaleRatio;
 
     const groundWidthInGame = GROUND_WIDTH * scaleRatio;
+    const startingMarkWidthInGame = STARTING_MARK_WIDTH * scaleRatio;
+    const startingMarkHeightInGame = STARTING_MARK_HEIGHT * scaleRatio;
     const finishWidthInGame = FINISH_WIDTH * scaleRatio;
     const groundHeightInGame = GROUND_HEIGHT * scaleRatio;
     const laneHeightInGame = LANE_HEIGHT * scaleRatio;
     const curbHeightInGame = CURB_HEIGHT * scaleRatio;
-
+    console.log(curbHeightInGame)
     player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame)
     playerShadow = new PlayerShadow(ctx, shadowWidthInGame, shadowHeightInGame, scaleRatio);
     crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
     ground = new Ground(ctx, groundWidthInGame, groundHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
     finishLine = new FinishLine(ctx, finishWidthInGame, groundHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, groundWidthInGame)
+
+    startingMark = new StartingMark(ctx, startingMarkWidthInGame, startingMarkHeightInGame, scaleRatio, GROUND_OBSTACLE_SPEED, laneHeightInGame, curbHeightInGame, playerWidthInGame);
 
     const obstaclePotholeImages = OBSTACLE_POTHOLE_CONFIG.map(o => {
         const image = new Image();
@@ -160,9 +172,19 @@ function showStartGame() {
     ctx.fillText("TAP SCREEN OR PRESS SPACE TO START", x, y);
 }
 
+function countDown(num) {
+        let fontSize = 50 * scaleRatio;
+        ctx.font = `${fontSize}px Veranda`;
+        // FIND A BETTER WAY TO CENTER THIS
+        let x = canvas.width / 2;
+        let y = canvas.height / 1.75;
+        ctx.fillStyle = "#000000";
+        ctx.fillText(num, x, y);
+}
+
 function startRace() {
     waitingToStart = false;
-    start = true;
+    countdown = true;
 }
 
 function showGameOver() {
@@ -188,11 +210,11 @@ function restartGameSetup() {
         hasAddEventListenersForRestart = true;
 
         setTimeout(() => {
-            window.addEventListener("keyup", reset, {once: true})
-            window.addEventListener("touchstart", reset, {once: true})
-
             window.removeEventListener("keyup", startRace, {once: true})
             window.removeEventListener("touchstart", startRace, {once: true})
+
+            window.addEventListener("keyup", reset, {once: true})
+            window.addEventListener("touchstart", reset, {once: true})
         }, 1000);
     }
 }
@@ -204,6 +226,8 @@ function reset() {
     finishLine.reset();
 
     player.laneIndex = 0;
+    player.keyUpSpeed = true;
+    player.playerSpeed = 0;
     player.reset();
 
     gameSpeed = GAME_SPEED_START;
@@ -217,8 +241,6 @@ function reset() {
     window.addEventListener("keyup", startRace, {once: true})
     window.addEventListener("touchstart", startRace, {once: true})
 }
-
-
 
 function gameLoop(currentTime) {
 
@@ -252,13 +274,14 @@ function gameLoop(currentTime) {
     // if (!player.jumpInProgress) {
     //     playerShadow.shadowActive = false;
     // }
-
+    
     // UPDATE GAME OBJECTS
     if (start) {
         ground.update(gameSpeed, frameTimeDelta);
         obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         finishLine.update(gameSpeed, frameTimeDelta);
         crowd.update(gameSpeed, frameTimeDelta);
+        startingMark.update(gameSpeed, frameTimeDelta);
         // score.update(frameTimeDelta);
         updateGameSpeed();
        
@@ -289,14 +312,14 @@ function gameLoop(currentTime) {
         }
     };
 
-     // DRAW GAME OBJECTS
-
+     // DRAW GAME OBJECTS\
     ctx.fillStyle = GRASS_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ground.draw();
     finishLine.draw();
     crowd.draw();
     obstaclePotholeController.draw();
+    startingMark.draw();
     // obstacleRampController.draw();
     // NEED TO CHANGE THIS TO UPDATE METHOD THAT ACTIVATES ON RAMP VARIABLE - THEN HAVE REGULAR DRAW
     playerShadow.draw();
@@ -309,6 +332,24 @@ function gameLoop(currentTime) {
     //
     if (waitingToStart) { 
         showStartGame();
+    }
+    if (countdown) {
+        if (!countdownActive) {
+            countdownActive = true;
+            const timerInt = setInterval(() => {
+            countdownNum--;
+            startingMark.updateImage(countdownNum);
+                if (countdownNum < 0) {
+                console.log('END');
+                clearInterval(timerInt);
+                start = true;
+                countdown = false;
+                countdownActive = false;
+                countdownNum = 3;
+                }
+            }, 1000)
+        }
+        countDown(countdownNum);
     }
     //
     requestAnimationFrame(gameLoop);

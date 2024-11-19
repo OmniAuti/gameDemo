@@ -44,7 +44,6 @@ export default class ObstaclePotholeController {
 
     update(gameSpeed, frameTimeDelta) {
         if (this.nextObstaclePotholeInterval <= 0) {
-
             this.createObstaclePothole();
             this.setNextObstaclePotholeTime();
         }

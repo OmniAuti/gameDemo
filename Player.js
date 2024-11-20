@@ -2,9 +2,13 @@ export default class Player {
     // PLAYER ANIMATION
     MOVE_ANIMATION_TIMER = 20;
     moveAnimationTimer = this.MOVE_ANIMATION_TIMER;
+    JUMP_ANIMATION_TIMER = 20;
+    jumpAnimationTimer = this.JUMP_ANIMATION_TIMER
     movingImages = [];
+    inclineImages = [];
     // RAMP ANIMATION
     playerOnRamp = false;
+    playerRampReaction = 0;
     jumpInProgress = false;
     falling = false;
     JUMP_SPEED = 0.2;
@@ -27,8 +31,8 @@ export default class Player {
         this.canvas = ctx.canvas;
         this.width = width;
         this.height = height;
-        this.minJumpHeight = minJumpHeight;
-        this.maxJumpHeight = maxJumpHeight;
+        this.minJumpHeight = minJumpHeight / 1.5;
+        this.maxJumpHeight = maxJumpHeight / 1.5;
         this.scaleRatio = scaleRatio;
         this.gameSpeed = gameSpeed;
         this.GAME_SPEED_START = GAME_SPEED_START;
@@ -38,12 +42,11 @@ export default class Player {
         this.x = 20 * scaleRatio;
         // this.y = this.canvas.height - this.height - (this.laneHeight * this.laneIndex) * scaleRatio; 
         this.y = this.canvas.height - this.height - this.curbHeight - (this.laneHeight * 1.5); 
-
         this.startingPositionX = 20 * scaleRatio; 
         this.startingPositionY = this.canvas.height - this.height - this.curbHeight - (this.laneHeight * 1.5); 
-
+        //
         this.playerSpeed = this.gameSpeed;
-
+        //
         const movingImage1 = new Image();
         movingImage1.src = "./images/player_move_1.png";
         const movingImage2 = new Image();
@@ -51,17 +54,33 @@ export default class Player {
 
         this.movingImages.push(movingImage1);
         this.movingImages.push(movingImage2);
+        //
+        const inclineA = new Image();
+        inclineA.src = "./images/player_InclineA.png";
+        this.inclineImages.push(inclineA);
+        const inclineB = new Image();
+        inclineB.src = "./images/player_InclineB.png";
+        this.inclineImages.push(inclineB);
+        const inclineC = new Image();
+        inclineC.src = "./images/player_InclineC.png";
+        this.inclineImages.push(inclineC);
+        const inclineD = new Image();
+        inclineD.src = "./images/player_InclineD.png";
+        this.inclineImages.push(inclineD);
 
         this.straightLaneImage = new Image();
         this.straightLaneImage.src = "./images/player_still.png";
         this.image = this.straightLaneImage;
-        
+        //
         this.turnUpImage = new Image();
         this.turnUpImage.src = "./images/player_turn_left.png";
 
         this.turnDownImage = new Image();
         this.turnDownImage.src = "./images/player_turn_right.png";
-
+        //
+        this.wheelieImage = new Image();
+        this.wheelieImage.src = "./images/Wheelie.png";
+        //
         // keyboard event
         window.removeEventListener('keydown', this.keydown);
         window.removeEventListener('keyup', this.keyup);
@@ -71,7 +90,7 @@ export default class Player {
     }
     // movement
     keydown = (e) => {
-
+        if (this.finishLine) return;
         if (this.playerOnRamp) return;
 
         if (e.code === "ArrowRight") {
@@ -96,6 +115,7 @@ export default class Player {
     }
 
     keyup = (e) => {
+        if (this.finishLine) return;
         if (e.code === "ArrowRight") {
             this.speedUp = false;
             this.keyUpSpeed = true;
@@ -108,6 +128,7 @@ export default class Player {
     }
 
     increaseSpeed(frameTimeDelta) {
+        if (this.finishLine) return;
         if (this.speedUp === true && this.x < this.canvas.width * .25) {
             // SPEED_INCREMENT
             this.x += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
@@ -118,6 +139,7 @@ export default class Player {
     }
 
     decreaseSpeed(frameTimeDelta) {
+        if (this.finishLine) return;
         if (this.speedUp === false && this.x > 20) {
             this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
             if (this.gameSpeed > this.GAME_SPEED_START) {
@@ -127,10 +149,14 @@ export default class Player {
     }
 
     update(gameSpeed, frameTimeDelta) {
-        // USE THIS STOP CONTROLS AND DO WHEELY
-        console.log(this.finishLine)
-
-        this.moving(gameSpeed, frameTimeDelta)
+        // USE THIS STOP CONTROLS AND DO WHEELY - Also controls sprite image
+        if (this.finishLine) {
+            this.image = this.wheelieImage;        
+        } else if (this.playerOnRamp) {
+            this.handleRamp(gameSpeed, frameTimeDelta);
+        } else {
+            this.moving(gameSpeed, frameTimeDelta);
+        }
         this.increaseSpeed(frameTimeDelta)
         this.decreaseSpeed(frameTimeDelta)
         
@@ -146,6 +172,7 @@ export default class Player {
     }
     // CHANGE LANES
     turn(frameTimeDelta) {
+        if (this.finishLine) return;
         if (this.moveLeft && this.y <= Math.floor(this.startingPositionY - ((this.laneHeight) * this.laneIndex))) {
             this.moveLeft = false;
         }  else if (this.moveRight && this.y >= Math.floor(this.startingPositionY - ((this.laneHeight) * this.laneIndex))) {
@@ -168,7 +195,7 @@ export default class Player {
             }
             this.moveAnimationTimer = this.MOVE_ANIMATION_TIMER;
         }
-        this.moveAnimationTimer -= frameTimeDelta * gameSpeed;
+        this.moveAnimationTimer -= frameTimeDelta * gameSpeed / 1.5;
     }
     // JUMP
 
@@ -176,16 +203,18 @@ export default class Player {
     // NEED TO ROTATE
     // HEIGHT BASED ON SPEED 
 
-    handleRamp(frameTimeDelta) {
+    handleRamp(gameSpeed, frameTimeDelta) {
         // NEED TO REDUCE SPEED SLIGHTLY 
         // NEED TO ROTATE
         // HEIGHT BASED ON SPEED 
+
+        // this.image = this.wheelieImage;       
+        this.image = this.inclineImages[0]
     }
 
     jump(frameTimeDelta) {
         if (this.playerOnRamp) {
             this.jumpInProgress = true;
-     
         }
 
         if (this.jumpInProgress && !this.falling) {
@@ -216,7 +245,24 @@ export default class Player {
     }
 
     reset() {
+        this.playerSpeed = this.GAME_SPEED_START;
+        this.finishLine = false;
         this.x = this.startingPositionX
         this.y = this.startingPositionY 
+        this.image = this.straightLaneImage;
+        this.laneIndex = 0;
+        this.keyUpSpeed = true;
+
+        // RAMP ANIMATION
+        this.playerOnRamp = false;
+        this.playerRampReaction = 0;
+        this.jumpInProgress = false;
+        this.falling = false;
+    
+        // MOVEMENT
+        this.moveLeft = false;
+        this.moveRight = false;
+        this.speedUp = false;
+        this.playerSpeed = this.gameSpeed;
     }
 }

@@ -20,11 +20,11 @@ export default class ObstaclePotholeController {
 
         this.setNextObstaclePotholeTime();
     }
-
     setNextObstaclePotholeTime() {
         const num = this.getRandomNumber(this.OBSTACLE_INTERVAL_MIN, this.OBSTACLE_INTERVAL_MAX);
         this.nextObstaclePotholeInterval = num;
     }
+
 
     getRandomNumber(min, max) {
         return Math.floor(Math.random() * ((max - min + 1) + min));

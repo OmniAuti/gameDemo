@@ -1,11 +1,12 @@
 export default class ObstacleRamp {
-    constructor(ctx, x, y, width, height, image) {
+    constructor(ctx, x, y, width, height, image, reactionValue) {
         this.ctx = ctx;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.image = image;
+        this.reaction = reactionValue;
     }
 
     update(speed, gameSpeed, frameTimeDelta, scaleRatio) {

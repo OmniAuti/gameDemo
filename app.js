@@ -11,8 +11,8 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const GAME_SPEED_END = .25;
-const GAME_SPEED_START = 0.5;
-const GAME_SPEED_MAX = .75;
+const GAME_SPEED_START = .65;
+const GAME_SPEED_MAX = 1;
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 200;
@@ -42,7 +42,9 @@ const OBSTACLE_POTHOLE_CONFIG = [
 ]
 
 const OBSTACLE_RAMP_CONFIG = [
-    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/rampA.png'},
+    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/RampA.png', reaction: 2},
+    {width: 72 / 1.5, height: 64 / 1.5, image: 'images/RampB.png', reaction: 2},
+    {width: 72 / 1.5, height: 81 / 1.5, image: 'images/RampC.png', reaction: 3},
 ]
 
 // GAME OBJECTS
@@ -108,7 +110,7 @@ function createSprites() {
     const groundHeightInGame = GROUND_HEIGHT * scaleRatio;
     const laneHeightInGame = LANE_HEIGHT * scaleRatio;
     const curbHeightInGame = CURB_HEIGHT * scaleRatio;
-    console.log(curbHeightInGame)
+
     player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame)
     playerShadow = new PlayerShadow(ctx, shadowWidthInGame, shadowHeightInGame, scaleRatio);
     crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
@@ -136,10 +138,11 @@ function createSprites() {
             image:image,
             width: o.width * scaleRatio,
             height: o.height * scaleRatio,
+            reaction: o.reaction,
         };
     });
 
-    obstacleRampController = new ObstacleRampController(ctx, obstacleRampImages, scaleRatio, GROUND_OBSTACLE_SPEED);
+    obstacleRampController = new ObstacleRampController(ctx, obstacleRampImages, scaleRatio, GROUND_OBSTACLE_SPEED,laneHeightInGame, curbHeightInGame);
 }
 
 function getScaleRatio() {
@@ -220,15 +223,17 @@ function restartGameSetup() {
 }
 
 function reset() {
+    window.addEventListener("keyup", startRace, {once: true})
+    window.addEventListener("touchstart", startRace, {once: true})
 
     ground.reset();
-    obstaclePotholeController.reset();
-    finishLine.reset();
+    crowd.reset()
+    // obstaclePotholeController.reset();
+    obstacleRampController.reset();
 
-    player.laneIndex = 0;
-    player.keyUpSpeed = true;
-    player.playerSpeed = 0;
+    finishLine.reset();
     player.reset();
+    startingMark.reset();
 
     gameSpeed = GAME_SPEED_START;
 
@@ -238,12 +243,10 @@ function reset() {
     hasAddEventListenersForRestart = false;
     waitingToStart = true;
 
-    window.addEventListener("keyup", startRace, {once: true})
-    window.addEventListener("touchstart", startRace, {once: true})
+
 }
 
 function gameLoop(currentTime) {
-
     if (previousTime === null) {
         previousTime = currentTime;
         requestAnimationFrame(gameLoop);
@@ -255,37 +258,45 @@ function gameLoop(currentTime) {
     clearScreen();
     // COLLIDE CHECK
     //Pothole
+    // if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
+    //     player.speedUp = false;
+    //     if (keyUpPlayer === null && player.keyUpSpeed === false) {
+    //         setTimeout(() => {
+    //             player.speedUp = true;
+    //             keyUpPlayer = null;
+    //         }, 500);     
+    //     }
+    //     keyUpPlayer = 1;
+    // }
 
-    if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
-        player.speedUp = false;
-        if (keyUpPlayer === null && player.keyUpSpeed === false) {
-            setTimeout(() => {
-                player.speedUp = true;
-                keyUpPlayer = null;
-            }, 500);     
-        }
-        keyUpPlayer = 1;
-    }
     // // RAMP
-    // if (obstacleRampController.collideWith(player)) {
-    //     playerShadow.shadowActive = true;
-    //     player.playerOnRamp = true;
-    // } 
+    if (obstacleRampController.collideWith(player)) {
+        // playerShadow.shadowActive = true;
+        player.playerOnRamp = true;
+        player.playerRampReaction = obstacleRampController.reactionValue;
+    } else {
+        player.playerRampReaction = 0;
+        player.playerOnRamp = false;
+    }
     // if (!player.jumpInProgress) {
     //     playerShadow.shadowActive = false;
     // }
     
     // UPDATE GAME OBJECTS
     if (start) {
+
         ground.update(gameSpeed, frameTimeDelta);
-        obstaclePotholeController.update(gameSpeed, frameTimeDelta);
+
+
+        // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
+        obstacleRampController.update(gameSpeed, frameTimeDelta);
+
         finishLine.update(gameSpeed, frameTimeDelta);
         crowd.update(gameSpeed, frameTimeDelta);
         startingMark.update(gameSpeed, frameTimeDelta);
         // score.update(frameTimeDelta);
         updateGameSpeed();
        
-        // obstacleRampController.update(gameSpeed, frameTimeDelta);
         playerShadow.update(player.width, player.height, player.x, player.y, player.startingPositionY, player.laneHeight, player.laneIndex);
         player.update(gameSpeed, frameTimeDelta, scaleRatio);
         // start finish
@@ -294,16 +305,22 @@ function gameLoop(currentTime) {
             finish = true;
         }
     }
-    
     if (finish) {
         gameSpeed = GAME_SPEED_END;
         player.playerSpeed = GAME_SPEED_END;
         player.update(gameSpeed, frameTimeDelta)
+        player.speedUp = true;
+        player.finishLine = true;
         ground.update(gameSpeed, frameTimeDelta);
+        
         finishLine.update(gameSpeed, frameTimeDelta);
         crowd.update(gameSpeed, frameTimeDelta);
-        obstaclePotholeController.update(gameSpeed, frameTimeDelta);
-        playerShadow.update(player.width, player.height, player.x, player.y, player.startingPositionY, player.laneHeight, player.laneIndex);
+
+
+        // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
+        obstacleRampController.update(gameSpeed, frameTimeDelta);
+
+        // playerShadow.update(player.width, player.height, player.x, player.y, player.startingPositionY, player.laneHeight, player.laneIndex);
         if (!finishTimeout)  {
             finishTimeout = setTimeout(() => {
                 gameOver = true;
@@ -311,18 +328,19 @@ function gameLoop(currentTime) {
             }, 4200)
         }
     };
-
-     // DRAW GAME OBJECTS\
+    // DRAW GAME OBJECTS
     ctx.fillStyle = GRASS_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ground.draw();
     finishLine.draw();
     crowd.draw();
-    obstaclePotholeController.draw();
+
+    // obstaclePotholeController.draw();
+    obstacleRampController.draw();
+
     startingMark.draw();
-    // obstacleRampController.draw();
     // NEED TO CHANGE THIS TO UPDATE METHOD THAT ACTIVATES ON RAMP VARIABLE - THEN HAVE REGULAR DRAW
-    playerShadow.draw();
+    // playerShadow.draw();
     // PLAYER ALWAYS DRAW LAST SO ITS OVER ALL OTHER PIXELS
     player.draw();
     //
@@ -333,6 +351,7 @@ function gameLoop(currentTime) {
     if (waitingToStart) { 
         showStartGame();
     }
+    //
     if (countdown) {
         if (!countdownActive) {
             countdownActive = true;
@@ -340,7 +359,6 @@ function gameLoop(currentTime) {
             countdownNum--;
             startingMark.updateImage(countdownNum);
                 if (countdownNum < 0) {
-                console.log('END');
                 clearInterval(timerInt);
                 start = true;
                 countdown = false;

@@ -16,9 +16,9 @@ export default class StartingMark {
         // THE 30 COMES FROM 20 THAT PLAYER SPRITE IS FROM SIDE THEN ADDD 10
         this.x = this.playerWidth + 25 * scaleRatio;
         this.y = this.canvas.height - this.height - this.curbHeightInGame - (this.laneHeight * 1.3); 
-        console.log(this.y, this.width, this.height)
-        this.startingPositionX = 25 * scaleRatio; 
-        this.startingPositionY = this.canvas.height - this.height - this.curbHeight - (this.laneHeight * 1.5); 
+
+        this.startingPositionX = this.playerWidth + 25 * scaleRatio;
+        this.startingPositionY = this.canvas.height - this.height - this.curbHeightInGame - (this.laneHeight * 1.3);
 
         const startingMarkOne = new Image();
         startingMarkOne.src = "./images/StartingMarkOne.png";
@@ -49,5 +49,11 @@ export default class StartingMark {
 
     draw() {
         this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+    }
+
+    reset() {
+        this.image = this.startingMarkArr[0];
+        this.x = this.startingPositionX;
+        this.y = this.startingPositionY;
     }
 }

@@ -152,9 +152,9 @@ export default class Player {
         // USE THIS STOP CONTROLS AND DO WHEELY - Also controls sprite image
         if (this.finishLine) {
             this.image = this.wheelieImage;        
-        } else if (this.playerOnRamp) {
+        } else if (this.playerOnRamp || this.jumpInProgress) {
             this.handleRamp(gameSpeed, frameTimeDelta);
-        } else {
+        } else if (!this.jumpInProgress && !this.falling) {
             this.moving(gameSpeed, frameTimeDelta);
         }
         this.increaseSpeed(frameTimeDelta)
@@ -208,8 +208,8 @@ export default class Player {
         // NEED TO ROTATE
         // HEIGHT BASED ON SPEED 
 
-        // this.image = this.wheelieImage;       
-        this.image = this.inclineImages[0]
+        // this.image = this.wheelieImage;    {
+            this.image = this.inclineImages[0]
     }
 
     jump(frameTimeDelta) {
@@ -233,6 +233,7 @@ export default class Player {
                     this.y = this.startingPositionY - this.laneHeight * this.laneIndex;
                 }
              } else {
+                
                 this.falling = false;
                 this.jumpInProgress = false;
                 this.playerOnRamp = false;

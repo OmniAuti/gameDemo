@@ -39,11 +39,11 @@ export default class StartingMark {
 
     updateImage(num) {
         // set interval 
-        if (num === 0) {
+        if (num === 1) {
                 this.image = this.startingMarkArr[1];
             setTimeout(() => {
                 this.image = this.startingMarkArr[2];
-            }, 500)
+            }, 1000)
         }
     }
 

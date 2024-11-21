@@ -35,7 +35,8 @@ export default class ObstaclePotholeController {
         const obstaclePotholeImage = this.obstaclePotholeImages[index];
         const x = this.canvas.width * 1.25;
         const laneIndex = this.getRandomNumber(0, 3);
-        const y = this.canvas.height - this.obstaclePotholeImages[index].height - (this.curbHeightInGame * 1.5) - (this.laneHeight * laneIndex);
+        const y = this.canvas.height - this.obstaclePotholeImages[index].height - (this.curbHeightInGame) - (this.laneHeight * laneIndex);
+
 
         const obstaclePothole = new ObstaclePothole(this.ctx, x, y, obstaclePotholeImage.width, obstaclePotholeImage.height, obstaclePotholeImage.image);
     

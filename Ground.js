@@ -8,7 +8,7 @@ export default class Ground {
         this.scaleRatio = scaleRatio;
 
         this.x = 0;
-        this.y = this.canvas.height - this.height;
+        this.y = this.canvas.height - this.height - this.canvas.height / 16;
 
         this.groundImage = new Image();
         this.groundImage.src = "./images/street_texture.png";

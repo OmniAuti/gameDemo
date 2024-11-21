@@ -3,6 +3,25 @@
     margin: 0;
 }
 
+/* FONTS */
+
+@font-face {
+    font-family: "bayard-regular";
+    src: url("/wp-content/themes/_93boyz/fonts/BAYARD-Regular.woff")
+    format("woff");
+    font-weight: normal;
+    font-display: block;
+}
+
+:root {
+    --_93Yellow: #ffdd2b;
+    --_93Black: #000000;
+    --_93White: #ffffff;
+    --Bayard-Regular: "bayard-regular", -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
 body  {
     display: flex;
     align-items: center;

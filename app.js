@@ -1,5 +1,6 @@
 import Player from "./Player.js";
 import PlayerShadow from "./PlayerShadow.js";
+import Grass from "./Grass.js";
 import Ground from "./Ground.js";
 import FinishLine from "./FinishLine.js";
 import StartingMark from "./StartingMark.js";
@@ -27,14 +28,15 @@ const STARTING_MARK_HEIGHT = 10;
 const FINISH_WIDTH = 1000;
 const LANE_HEIGHT = 11;
 const CURB_HEIGHT = 7;
-const CROWD_HEIGHT = 64;
-const CROWD_WIDTH = 2047;
+const CROWD_HEIGHT = 60;
+const CROWD_WIDTH = 2044;
 const GROUND_OBSTACLE_SPEED = 0.25;
+
+const DEFAULT_COLOR_YELLOW = "#ffdd2b";
+const DEFAULT_BACKGROUND_COLOR = "#b2b2b1";
 
 const SHADOW_WIDTH = 10;
 const SHADOW_HEIGHT = 5;
-
-const GRASS_COLOR = "#b2b2b1";
 
 const OBSTACLE_POTHOLE_CONFIG = [
     {width: 24 / 1.5, height: 13 / 1.5, image: 'images/obstacle_potholeOne.png'},
@@ -50,6 +52,7 @@ const OBSTACLE_RAMP_CONFIG = [
 // GAME OBJECTS
 let player = null;
 let playerShadow = null;
+let grass = null;
 let ground = null;
 let finishLine = null;
 let startingMark = null
@@ -109,13 +112,14 @@ function createSprites() {
     const finishWidthInGame = FINISH_WIDTH * scaleRatio;
     const groundHeightInGame = GROUND_HEIGHT * scaleRatio;
     const laneHeightInGame = LANE_HEIGHT * scaleRatio;
-    const curbHeightInGame = CURB_HEIGHT * scaleRatio;
+    const curbHeightInGame = CURB_HEIGHT * scaleRatio + canvas.height / 16;
 
-    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame)
+    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, start)
     playerShadow = new PlayerShadow(ctx, shadowWidthInGame, shadowHeightInGame, scaleRatio);
+    grass = new Grass(ctx, canvas.width, canvas.height, GROUND_OBSTACLE_SPEED, scaleRatio, curbHeightInGame);
     crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
     ground = new Ground(ctx, groundWidthInGame, groundHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
-    finishLine = new FinishLine(ctx, finishWidthInGame, groundHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, groundWidthInGame)
+    finishLine = new FinishLine(ctx, finishWidthInGame, groundHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, groundWidthInGame, curbHeightInGame)
 
     startingMark = new StartingMark(ctx, startingMarkWidthInGame, startingMarkHeightInGame, scaleRatio, GROUND_OBSTACLE_SPEED, laneHeightInGame, curbHeightInGame, playerWidthInGame);
 
@@ -167,9 +171,9 @@ function updateGameSpeed() {
 
 function showStartGame() {
     let fontSize = 20 * scaleRatio;
-    ctx.font = `${fontSize}px Veranda`;
+    ctx.font = `${fontSize}px "bayard-regular"`;
     // FIND A BETTER WAY TO CENTER THIS
-    let x = canvas.width / 5;
+    let x = canvas.width / 4;
     let y = canvas.height / 2;
     ctx.fillStyle = "#000000";
     ctx.fillText("TAP SCREEN OR PRESS SPACE TO START", x, y);
@@ -177,12 +181,16 @@ function showStartGame() {
 
 function countDown(num) {
         let fontSize = 50 * scaleRatio;
-        ctx.font = `${fontSize}px Veranda`;
+        ctx.font = `${fontSize}px "bayard-regular"`;
         // FIND A BETTER WAY TO CENTER THIS
-        let x = canvas.width / 2;
-        let y = canvas.height / 1.75;
+        let x = canvas.width / 4;
+        let y = canvas.height / 1.85;
         ctx.fillStyle = "#000000";
-        ctx.fillText(num, x, y);
+        if (num <= 0) {
+            ctx.fillText("GAS!", x, y);
+        } else {
+            ctx.fillText(num, x, y);
+        }
 }
 
 function startRace() {
@@ -191,19 +199,19 @@ function startRace() {
 }
 
 function showGameOver() {
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         let fontSize = 70 * scaleRatio;
-        ctx.font = `${fontSize}px Veranda`;
+        ctx.font = `${fontSize}px "bayard-regular"`;
         // FIND A BETTER WAY TO CENTER THIS
-        let x = canvas.width / 4.2;
-        let y = canvas.height / 2;
+        let x = canvas.width / 3.25;
+        let y = canvas.height / 1.75;
         ctx.fillStyle = "#ffdd2b";
         ctx.fillText("GAME OVER", x, y);
 
         fontSize = 16 * scaleRatio;
-        ctx.font = `${fontSize}px Veranda`;
-        x = canvas.width / 3;
+        ctx.font = `${fontSize}px "bayard-regular"`;
+        x = canvas.width / 2.9;
         y = canvas.height / 1.25;
         ctx.fillText("PRESS ANY BUTTON TO PLAY AGAIN", x, y);
 }
@@ -225,7 +233,7 @@ function restartGameSetup() {
 function reset() {
     window.addEventListener("keyup", startRace, {once: true})
     window.addEventListener("touchstart", startRace, {once: true})
-
+    grass.reset();
     ground.reset();
     crowd.reset()
     // obstaclePotholeController.reset();
@@ -242,8 +250,7 @@ function reset() {
     gameOver = false;
     hasAddEventListenersForRestart = false;
     waitingToStart = true;
-
-
+    player.waitingToStart = start;
 }
 
 function gameLoop(currentTime) {
@@ -271,20 +278,20 @@ function gameLoop(currentTime) {
 
     // // RAMP
     if (obstacleRampController.collideWith(player)) {
-        // playerShadow.shadowActive = true;
+        playerShadow.shadowActive = true;
         player.playerOnRamp = true;
         player.playerRampReaction = obstacleRampController.reactionValue;
     } else {
         player.playerRampReaction = 0;
         player.playerOnRamp = false;
     }
-    // if (!player.jumpInProgress) {
-    //     playerShadow.shadowActive = false;
-    // }
+    if (!player.jumpInProgress) {
+        playerShadow.shadowActive = false;
+    }
     
     // UPDATE GAME OBJECTS
     if (start) {
-
+        grass.update(gameSpeed, frameTimeDelta);
         ground.update(gameSpeed, frameTimeDelta);
 
 
@@ -311,8 +318,9 @@ function gameLoop(currentTime) {
         player.update(gameSpeed, frameTimeDelta)
         player.speedUp = true;
         player.finishLine = true;
+        grass.update(gameSpeed, frameTimeDelta);
         ground.update(gameSpeed, frameTimeDelta);
-        
+
         finishLine.update(gameSpeed, frameTimeDelta);
         crowd.update(gameSpeed, frameTimeDelta);
 
@@ -329,8 +337,10 @@ function gameLoop(currentTime) {
         }
     };
     // DRAW GAME OBJECTS
-    ctx.fillStyle = GRASS_COLOR;
+    ctx.fillStyle = DEFAULT_BACKGROUND_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // ctx.drawImage(grass, 0, 0);
+    grass.draw();
     ground.draw();
     finishLine.draw();
     crowd.draw();
@@ -340,7 +350,7 @@ function gameLoop(currentTime) {
 
     startingMark.draw();
     // NEED TO CHANGE THIS TO UPDATE METHOD THAT ACTIVATES ON RAMP VARIABLE - THEN HAVE REGULAR DRAW
-    // playerShadow.draw();
+    playerShadow.draw();
     // PLAYER ALWAYS DRAW LAST SO ITS OVER ALL OTHER PIXELS
     player.draw();
     //
@@ -361,6 +371,7 @@ function gameLoop(currentTime) {
                 if (countdownNum < 0) {
                 clearInterval(timerInt);
                 start = true;
+                player.waitingToStart = start;
                 countdown = false;
                 countdownActive = false;
                 countdownNum = 3;

@@ -1,5 +1,5 @@
 export default class FinishLine {
-    constructor(ctx, width, height, speed, scaleRatio, trackLength) {
+    constructor(ctx, width, height, speed, scaleRatio, trackLength, curbHeightInGame) {
         this.ctx = ctx;
         this.canvas = ctx.canvas;
         this.width = width;
@@ -7,9 +7,10 @@ export default class FinishLine {
         this.speed = speed;
         this.scaleRatio = scaleRatio;
         this.trackLength = trackLength;
+        this.curbHeightInGame = curbHeightInGame;
 
-        this.x = this.trackLength;
-        this.y = this.canvas.height - this.height;
+        this.x = this.trackLength - 2;
+        this.y = this.canvas.height - this.height - this.canvas.height / 16;
 
         this.groundImage = new Image();
         this.groundImage.src = "./images/finishLine.png";

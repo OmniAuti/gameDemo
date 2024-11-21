@@ -39,7 +39,7 @@ export default class ObstacleRampController {
         const x = this.canvas.width * 1.15;
         // const laneIndex = this.getRandomNumber(0, 1);
         const laneIndex = 0;
-        const y = this.canvas.height - obstacleRampImage.height - (this.curbHeightInGame * 1.5) - (this.laneHeight * laneIndex);
+        const y = this.canvas.height - obstacleRampImage.height - (this.curbHeightInGame) - (this.laneHeight * laneIndex);
         const obstacleRamp = new ObstacleRamp(this.ctx, x, y, obstacleRampImage.width, obstacleRampImage.height, obstacleRampImage.image, reactionValue);
     
         this.obstaclesRamp.push(obstacleRamp);

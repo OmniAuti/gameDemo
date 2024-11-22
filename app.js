@@ -1,12 +1,17 @@
 import Player from "./Player.js";
 import PlayerShadow from "./PlayerShadow.js";
 import Grass from "./Grass.js";
+import Crowd from "./Crowd.js";
 import Ground from "./Ground.js";
 import FinishLine from "./FinishLine.js";
 import StartingMark from "./StartingMark.js";
-import Crowd from "./Crowd.js";
+import BackgroundCity from "./BackgroundCity.js";
+import BackgroundBlock from "./BackgroundBlock.js";
 import ObstaclePotholeController from "./ObstaclePotholeController.js";
 import ObstacleRampController from "./ObstacleRampController.js";
+
+import Timer from "./Timer.js";
+import Gas from "./Gas.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -16,7 +21,7 @@ const GAME_SPEED_START = .65;
 const GAME_SPEED_MAX = 1;
 
 const GAME_WIDTH = 800;
-const GAME_HEIGHT = 200;
+const GAME_HEIGHT = 300;
 const PLAYER_WIDTH = 20 / 1;
 const PLAYER_HEIGHT = 21 / 1;
 const MAX_JUMP_HEIGHT = GAME_HEIGHT / 4;
@@ -29,12 +34,22 @@ const FINISH_WIDTH = 1000;
 const LANE_HEIGHT = 11;
 const CURB_HEIGHT = 7;
 const CROWD_HEIGHT = 60;
-const CROWD_WIDTH = 2044;
+const CROWD_WIDTH = 1456;
+const BACKGROUND_CITY_HEIGHT = 528;
+const BACKGROUND_CITY_WIDTH = 2044;
+const BACKGROUND_BLOCK_HEIGHT = 488;
+const BACKGROUND_BLOCK_WIDTH = 2688;
 const GROUND_OBSTACLE_SPEED = 0.25;
-
+//
+const MAX_PLAYER_GAS = 100;
+const STARTING_PLAYER_GAS = 75;
+const MIN_PLAYER_GAS = 0;
+//
 const DEFAULT_COLOR_YELLOW = "#ffdd2b";
+const DEFAULT_COLOR_GREEN = "#359e4a";
+const DEFAULT__COLOR_RED = "#e35353";
 const DEFAULT_BACKGROUND_COLOR = "#b2b2b1";
-
+//
 const SHADOW_WIDTH = 10;
 const SHADOW_HEIGHT = 5;
 
@@ -52,15 +67,19 @@ const OBSTACLE_RAMP_CONFIG = [
 // GAME OBJECTS
 let player = null;
 let playerShadow = null;
-let grass = null;
 let ground = null;
 let finishLine = null;
 let startingMark = null
 let finishTimeout = null;
-let crowd = null;
+let timer = null;
+let gasIndicator = null;
+// let grass = null;
+// let crowd = null;
+let backgroundCity = null;
+let backgroundBlock = null;
 let obstaclePotholeController = null;
 let obstacleRampController = null;
-
+//
 let resizeCheck = null;
 let keyUpPlayer = null;
 let scaleRatio = null;
@@ -105,23 +124,32 @@ function createSprites() {
 
     const crowdWidthInGame = CROWD_WIDTH * scaleRatio;
     const crowdHeightInGame = CROWD_HEIGHT * scaleRatio;
+    const backgroundCityWidthInGame = BACKGROUND_CITY_WIDTH * scaleRatio;
+    const backgroundCityHeightInGame = BACKGROUND_CITY_HEIGHT * scaleRatio;
+    const backgroundBlockWidthInGame = BACKGROUND_BLOCK_WIDTH * scaleRatio;
+    const backgroundBlockHeightInGame = BACKGROUND_BLOCK_HEIGHT * scaleRatio;
 
     const groundWidthInGame = GROUND_WIDTH * scaleRatio;
+    const groundHeightInGame = GROUND_HEIGHT * scaleRatio;
     const startingMarkWidthInGame = STARTING_MARK_WIDTH * scaleRatio;
     const startingMarkHeightInGame = STARTING_MARK_HEIGHT * scaleRatio;
     const finishWidthInGame = FINISH_WIDTH * scaleRatio;
-    const groundHeightInGame = GROUND_HEIGHT * scaleRatio;
     const laneHeightInGame = LANE_HEIGHT * scaleRatio;
     const curbHeightInGame = CURB_HEIGHT * scaleRatio + canvas.height / 16;
 
-    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, start)
+    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, start, STARTING_PLAYER_GAS)
     playerShadow = new PlayerShadow(ctx, shadowWidthInGame, shadowHeightInGame, scaleRatio);
-    grass = new Grass(ctx, canvas.width, canvas.height, GROUND_OBSTACLE_SPEED, scaleRatio, curbHeightInGame);
-    crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
+    // grass = new Grass(ctx, canvas.width, canvas.height, GROUND_OBSTACLE_SPEED, scaleRatio, curbHeightInGame);
+    // crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
+    backgroundCity = new BackgroundCity(ctx, backgroundCityWidthInGame, backgroundCityHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
+    backgroundBlock = new BackgroundBlock(ctx, backgroundBlockWidthInGame, backgroundBlockHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, groundHeightInGame);
     ground = new Ground(ctx, groundWidthInGame, groundHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
     finishLine = new FinishLine(ctx, finishWidthInGame, groundHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, groundWidthInGame, curbHeightInGame)
 
     startingMark = new StartingMark(ctx, startingMarkWidthInGame, startingMarkHeightInGame, scaleRatio, GROUND_OBSTACLE_SPEED, laneHeightInGame, curbHeightInGame, playerWidthInGame);
+
+    timer = new Timer(ctx, GROUND_OBSTACLE_SPEED, scaleRatio)
+    gasIndicator = new Gas(ctx, laneHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, MAX_PLAYER_GAS, MIN_PLAYER_GAS, STARTING_PLAYER_GAS)
 
     const obstaclePotholeImages = OBSTACLE_POTHOLE_CONFIG.map(o => {
         const image = new Image();
@@ -206,7 +234,7 @@ function showGameOver() {
         // FIND A BETTER WAY TO CENTER THIS
         let x = canvas.width / 3.25;
         let y = canvas.height / 1.75;
-        ctx.fillStyle = "#ffdd2b";
+        ctx.fillStyle = DEFAULT_COLOR_YELLOW;
         ctx.fillText("GAME OVER", x, y);
 
         fontSize = 16 * scaleRatio;
@@ -233,9 +261,9 @@ function restartGameSetup() {
 function reset() {
     window.addEventListener("keyup", startRace, {once: true})
     window.addEventListener("touchstart", startRace, {once: true})
-    grass.reset();
     ground.reset();
-    crowd.reset()
+    backgroundCity.reset()
+    backgroundBlock.reset();
     // obstaclePotholeController.reset();
     obstacleRampController.reset();
 
@@ -291,15 +319,14 @@ function gameLoop(currentTime) {
     
     // UPDATE GAME OBJECTS
     if (start) {
-        grass.update(gameSpeed, frameTimeDelta);
         ground.update(gameSpeed, frameTimeDelta);
-
-
+        backgroundCity.update(gameSpeed, frameTimeDelta);
+        backgroundBlock.update(gameSpeed, frameTimeDelta);
         // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         obstacleRampController.update(gameSpeed, frameTimeDelta);
 
         finishLine.update(gameSpeed, frameTimeDelta);
-        crowd.update(gameSpeed, frameTimeDelta);
+        // crowd.update(gameSpeed, frameTimeDelta);
         startingMark.update(gameSpeed, frameTimeDelta);
         // score.update(frameTimeDelta);
         updateGameSpeed();
@@ -318,11 +345,11 @@ function gameLoop(currentTime) {
         player.update(gameSpeed, frameTimeDelta)
         player.speedUp = true;
         player.finishLine = true;
-        grass.update(gameSpeed, frameTimeDelta);
         ground.update(gameSpeed, frameTimeDelta);
-
+        backgroundCity.update(gameSpeed, frameTimeDelta);
+        backgroundBlock.update(gameSpeed, frameTimeDelta);
         finishLine.update(gameSpeed, frameTimeDelta);
-        crowd.update(gameSpeed, frameTimeDelta);
+        // crowd.update(gameSpeed, frameTimeDelta);
 
 
         // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
@@ -339,11 +366,10 @@ function gameLoop(currentTime) {
     // DRAW GAME OBJECTS
     ctx.fillStyle = DEFAULT_BACKGROUND_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // ctx.drawImage(grass, 0, 0);
-    grass.draw();
+    backgroundCity.draw();
+    backgroundBlock.draw();
     ground.draw();
     finishLine.draw();
-    crowd.draw();
 
     // obstaclePotholeController.draw();
     obstacleRampController.draw();
@@ -353,6 +379,8 @@ function gameLoop(currentTime) {
     playerShadow.draw();
     // PLAYER ALWAYS DRAW LAST SO ITS OVER ALL OTHER PIXELS
     player.draw();
+    timer.draw();
+    gasIndicator.draw();
     //
     if (gameOver) {
         showGameOver();

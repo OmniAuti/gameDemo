@@ -24,17 +24,14 @@ export default class Player {
     laneIndex = 0;
     MOVE_SPEED = 0.1;
     SPEED_INCREMENT = 0.01;
-    // player gas will be less at start
-    MAX_PLAYER_GAS = 100;
-    MIN_PLAYER_GAS = 0;
-    playerGas = 50;
+
     playerWheelie = false;
     playerWheelieBoost = false;
     playerwheelieDown = false;
 
     finishLine = false;
 
-    constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, waitingToStart) {
+    constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, waitingToStart, availableGas) {
 
         this.ctx = ctx;
         this.canvas = ctx.canvas;
@@ -56,6 +53,8 @@ export default class Player {
         this.startingPositionY = this.canvas.height - this.height - this.curbHeight - (this.laneHeight * 1.5); 
         //
         this.playerSpeed = this.gameSpeed;
+        //
+        this.availableGas = availableGas;
         //
         const movingImage1 = new Image();
         movingImage1.src = "./images/player_move_1.png";
@@ -103,12 +102,12 @@ export default class Player {
         if (this.finishLine) return;
         if (this.playerOnRamp) return; 
         if (!this.waitingToStart) return;
-        
+            console.log(e.code)
         // WHEELIE
-        if (e.code === "Space" && this.playerGas > 0 && !this.playerWheelie) {
+        if (e.code === "Space" && this.availableGas > 0 && !this.playerWheelie) {
             this.playerWheelie = true;
             this.playerwheelieDown = false;
-        } else if (this.playerGas <= 0 && !this.playerWheelie) {
+        } else if (this.availableGas <= 0 && !this.playerWheelie) {
             this.playerWheelie = false;
             this.playerwheelieDown = false;
         }
@@ -342,7 +341,7 @@ export default class Player {
         this.speedUp = false;
         this.playerSpeed = this.gameSpeed;
         // WHEELIE
-        this.playerGas = 50;
+        this.availableGas = 50;
         this.playerWheelie = false;
         this.playerWheelieBoost = false;
         this.playerwheelieDown = false;

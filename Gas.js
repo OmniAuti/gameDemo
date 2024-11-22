@@ -14,7 +14,7 @@ export default class Gas {
         this.startingGas = startingGas;
 
         this.x = this.canvas.width / 4;
-        this.y = this.canvas.height - this.canvas.height / 17;
+        this.y = this.canvas.height - this.canvas.height / 21;
     }
 
     draw() {
@@ -24,8 +24,10 @@ export default class Gas {
         let x = this.x;
         let y = this.y;
         this.ctx.fillStyle = "#000000";
-        this.ctx.fillText("GAS", x - this.height * 2, y + this.height * .92);
+        this.ctx.fillText("GAS -", x - this.height * 2.38, y + this.height * .92);
 
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillRect(this.x - this.height * .18, this.y + this.height * -.115, this.canvas.width / 9.5, this.height * 1.25);
         this.ctx.fillStyle = this.DEFAULT_COLOR_RED;
         this.ctx.fillRect(this.x, this.y, this.canvas.width / 10, this.height);
 

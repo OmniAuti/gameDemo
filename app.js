@@ -20,8 +20,8 @@ const GAME_SPEED_END = .25;
 const GAME_SPEED_START = .65;
 const GAME_SPEED_MAX = 1;
 
-const GAME_WIDTH = 800;
-const GAME_HEIGHT = 300;
+const GAME_WIDTH = 714;
+const GAME_HEIGHT = 420;
 const PLAYER_WIDTH = 20 / 1;
 const PLAYER_HEIGHT = 21 / 1;
 const MAX_JUMP_HEIGHT = GAME_HEIGHT / 4;
@@ -198,11 +198,11 @@ function updateGameSpeed() {
 }
 
 function showStartGame() {
-    let fontSize = 20 * scaleRatio;
+    let fontSize = 22 * scaleRatio;
     ctx.font = `${fontSize}px "bayard-regular"`;
     // FIND A BETTER WAY TO CENTER THIS
     let x = canvas.width / 3.25;
-    let y = canvas.height / 1.18;
+    let y = canvas.height / 1.14;
     ctx.fillStyle = "#000000";
     ctx.fillText("TAP SCREEN OR PRESS SPACE TO START", x, y);
 }
@@ -211,8 +211,8 @@ function countDown(num) {
         let fontSize = 50 * scaleRatio;
         ctx.font = `${fontSize}px "bayard-regular"`;
         // FIND A BETTER WAY TO CENTER THIS
-        let x = canvas.width / 2.5;
-        let y = canvas.height / 1.14;
+        let x = canvas.width / 2.45;
+        let y = canvas.height / 1.115;
         ctx.fillStyle = "#000000";
         if (num <= 0) {
             ctx.fillText("GAS!", x, y);

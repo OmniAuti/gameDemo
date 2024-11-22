@@ -11,7 +11,7 @@ export default class Timer {
         this.scaleRatio = scaleRatio;
 
         this.x = this.canvas.width / 2;
-        this.y = this.canvas.height - this.canvas.height / 50;
+        this.y = this.canvas.height - this.canvas.height * 0.025;
     }
 
     draw() {

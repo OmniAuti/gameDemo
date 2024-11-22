@@ -3,7 +3,7 @@ export default class BackgroundBlock {
         this.ctx = ctx;
         this.canvas = ctx.canvas;
         // this.width = width;
-        this.width = this.canvas.width;
+        this.width = this.canvas.width * 1.4;
         // this.height = height;
         this.height = this.canvas.height * .4;
         this.speed = speed;

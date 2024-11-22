@@ -37,6 +37,7 @@ body  {
 
 canvas {
     /* border: 1px solid red; */
+    max-height: 100vh;
 }
 
 /* #e45454 RED */

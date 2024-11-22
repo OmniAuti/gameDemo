@@ -102,7 +102,7 @@ export default class Player {
         if (this.finishLine) return;
         if (this.playerOnRamp) return; 
         if (!this.waitingToStart) return;
-            console.log(e.code)
+
         // WHEELIE
         if (e.code === "Space" && this.availableGas > 0 && !this.playerWheelie) {
             this.playerWheelie = true;

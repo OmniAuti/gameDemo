@@ -201,8 +201,8 @@ function showStartGame() {
     let fontSize = 20 * scaleRatio;
     ctx.font = `${fontSize}px "bayard-regular"`;
     // FIND A BETTER WAY TO CENTER THIS
-    let x = canvas.width / 4;
-    let y = canvas.height / 2;
+    let x = canvas.width / 3.25;
+    let y = canvas.height / 1.18;
     ctx.fillStyle = "#000000";
     ctx.fillText("TAP SCREEN OR PRESS SPACE TO START", x, y);
 }
@@ -211,8 +211,8 @@ function countDown(num) {
         let fontSize = 50 * scaleRatio;
         ctx.font = `${fontSize}px "bayard-regular"`;
         // FIND A BETTER WAY TO CENTER THIS
-        let x = canvas.width / 4;
-        let y = canvas.height / 1.85;
+        let x = canvas.width / 2.5;
+        let y = canvas.height / 1.14;
         ctx.fillStyle = "#000000";
         if (num <= 0) {
             ctx.fillText("GAS!", x, y);

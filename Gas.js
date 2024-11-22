@@ -14,7 +14,7 @@ export default class Gas {
         this.startingGas = startingGas;
 
         this.x = this.canvas.width / 4;
-        this.y = this.canvas.height - this.canvas.height / 14;
+        this.y = this.canvas.height - this.canvas.height / 17;
     }
 
     draw() {

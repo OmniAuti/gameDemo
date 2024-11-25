@@ -28,6 +28,7 @@ export default class Player {
     playerWheelie = false;
     playerWheelieBoost = false;
     playerwheelieDown = false;
+    playerResetAfterWheelie = false;
 
     finishLine = false;
 
@@ -43,6 +44,7 @@ export default class Player {
         this.gameSpeed = gameSpeed;
         this.GAME_SPEED_START = GAME_SPEED_START;
         this.GAME_SPEED_MAX = GAME_SPEED_MAX;
+        this.GAME_SPEED_GAS = GAME_SPEED_MAX * 1.5;
         this.laneHeight = laneHeightInGame;
         this.curbHeight = curbHeightInGame;
         this.waitingToStart = waitingToStart;
@@ -110,6 +112,7 @@ export default class Player {
         } else if (this.availableGas <= 0 && !this.playerWheelie) {
             this.playerWheelie = false;
             this.playerwheelieDown = false;
+            this.playerResetAfterWheelie = false;
         }
 
         if (this.playerWheelie || this.playerwheelieDown) return; 
@@ -145,6 +148,7 @@ export default class Player {
             this.playerWheelie = false;
             this.wheelieAnimationTimer = this.WHEELIE_ANIMATION_TIMER;
             this.playerwheelieDown = true;
+            this.playerResetAfterWheelie = true;
         }
         if (this.playerWheelie || this.playerwheelieDown) return; 
         // TURNING
@@ -169,17 +173,28 @@ export default class Player {
             }
         }
     }
-
+    //
     decreaseSpeed(frameTimeDelta) {
         if (this.finishLine) return;
-        if (this.speedUp === false && this.x > 20) {
+        
+        if (!this.playerResetAfterWheelie && this.speedUp === false && this.x > 20) {
+            console.log('NORMAL D')
             this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
             if (this.gameSpeed > this.GAME_SPEED_START) {
                 this.playerSpeed = this.gameSpeed -= this.SPEED_INCREMENT;
             }
+        } else if (this.playerResetAfterWheelie && this.speedUp === true && this.x > this.canvas.width * .25) {
+            console.log('D IT')
+            this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
+            if (this.gameSpeed > this.GAME_SPEED_MAX) {
+                this.playerSpeed = this.gameSpeed -= this.SPEED_INCREMENT;
+            }
+            if (this.playerResetAfterWheelie && this.x <= this.canvas.width * .25 && this.gameSpeed <= this.GAME_SPEED_MAX){
+                this.playerResetAfterWheelie = false;
+            }
         }
     }
-
+    //
     update(gameSpeed, frameTimeDelta) {
         // USE THIS STOP CONTROLS AND DO WHEELY - Also controls sprite image
         if (this.finishLine) {
@@ -192,6 +207,7 @@ export default class Player {
             this.wheelieBoost(gameSpeed, frameTimeDelta);
         } else if (this.playerwheelieDown && !this.playerWheelie && !this.falling) {
             this.wheelieDown(gameSpeed, frameTimeDelta);
+
         }
         this.increaseSpeed(frameTimeDelta)
         this.decreaseSpeed(frameTimeDelta)
@@ -234,8 +250,10 @@ export default class Player {
         }
         this.moveAnimationTimer -= frameTimeDelta * gameSpeed / 1.5;
     }
-
+    //
     wheelieBoost(gameSpeed, frameTimeDelta) {
+        if (this.finishLine) return;
+
         if (this.wheelieAnimationTimer > 0) {
             if (this.wheelieAnimationTimer <= 500 && this.wheelieAnimationTimer > 400) {
                 this.image = this.inclineImages[0]
@@ -250,8 +268,16 @@ export default class Player {
             }
             this.wheelieAnimationTimer -= frameTimeDelta * gameSpeed * 4;
         } 
-    }
 
+        if (this.playerWheelie === true && this.x < this.canvas.width * .5) {
+            // SPEED_INCREMENT
+            this.x += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
+            if (this.gameSpeed < this.GAME_SPEED_GAS) {
+                this.playerSpeed = this.gameSpeed += this.SPEED_INCREMENT;
+            }
+        }
+    }
+    //
     wheelieDown(gameSpeed, frameTimeDelta) {
         if (this.wheelieAnimationTimer > 0) {
             if (this.wheelieAnimationTimer <= 500 && this.wheelieAnimationTimer > 400) {
@@ -345,5 +371,6 @@ export default class Player {
         this.playerWheelie = false;
         this.playerWheelieBoost = false;
         this.playerwheelieDown = false;
+        this.playerResetAfterWheelie = false;
     }
 }

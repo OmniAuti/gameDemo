@@ -32,7 +32,7 @@ body  {
     touch-action: none;
     outline: none;
     background-color: #000;
-    background-image: url("images/broken-noise.png");
+    background-image: url("images/road-texture.png");
 }
 
 canvas {

@@ -3,7 +3,7 @@ import ObstaclePothole from "./ObstaclePothole.js"
 export default class ObstaclePotholeController {
 
     OBSTACLE_INTERVAL_MIN = 500
-    OBSTACLE_INTERVAL_MAX = 2000
+    OBSTACLE_INTERVAL_MAX = 3000
     
     nextObstaclePotholeInterval = null;
     obstaclesPothole = [];
@@ -34,9 +34,8 @@ export default class ObstaclePotholeController {
         const index = this.getRandomNumber(0, this.obstaclePotholeImages.length - 1);
         const obstaclePotholeImage = this.obstaclePotholeImages[index];
         const x = this.canvas.width * 1.25;
-        const laneIndex = this.getRandomNumber(0, 3);
-        const y = this.canvas.height - this.obstaclePotholeImages[index].height - (this.curbHeightInGame) - (this.laneHeight * laneIndex);
-
+        const laneIndex = this.getRandomNumber(0, 4);
+        const y = this.canvas.height - this.obstaclePotholeImages[index].height - (this.curbHeightInGame) - (this.laneHeight * 1.15) * laneIndex;
 
         const obstaclePothole = new ObstaclePothole(this.ctx, x, y, obstaclePotholeImage.width, obstaclePotholeImage.height, obstaclePotholeImage.image);
     

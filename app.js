@@ -12,6 +12,7 @@ import ObstacleRampController from "./ObstacleRampController.js";
 
 import Timer from "./Timer.js";
 import Gas from "./Gas.js";
+import StartingLight from "./StartingLight.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -41,8 +42,8 @@ const BACKGROUND_BLOCK_HEIGHT = 488;
 const BACKGROUND_BLOCK_WIDTH = 2688;
 const GROUND_OBSTACLE_SPEED = 0.25;
 //
-const MAX_PLAYER_GAS = 100;
-const STARTING_GAS = 75;
+const MAX_PLAYER_GAS = 1;
+const STARTING_GAS = .075;
 const MIN_GAS = 0;
 //
 const DEFAULT_COLOR_YELLOW = "#ffdd2b";
@@ -73,6 +74,7 @@ let startingMark = null
 let finishTimeout = null;
 let timer = null;
 let gasIndicator = null;
+let startingLight = null;
 // let grass = null;
 // let crowd = null;
 let backgroundCity = null;
@@ -93,10 +95,19 @@ let hasAddEventListenersForRestart = false;
 let waitingToStart = true;
 let countdown = false;
 let countdownActive = false;
+
+let timerStop = true;
+
 let countdownNum = 3;
 
-let availableGas = STARTING_GAS;
+var milliInt;
+var secInt;
+var minInt;
+var millisecond = 0;
+var second = 0;
+var minute = 0;
 
+let availableGas = STARTING_GAS;
 // SCREEN
 function setScreen() {
     scaleRatio = getScaleRatio();
@@ -150,8 +161,9 @@ function createSprites() {
 
     startingMark = new StartingMark(ctx, startingMarkWidthInGame, startingMarkHeightInGame, scaleRatio, GROUND_OBSTACLE_SPEED, laneHeightInGame, curbHeightInGame, playerWidthInGame);
 
-    timer = new Timer(ctx, GROUND_OBSTACLE_SPEED, scaleRatio)
-    gasIndicator = new Gas(ctx, laneHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, MAX_PLAYER_GAS, MIN_GAS, STARTING_GAS, availableGas)
+    timer = new Timer(ctx, GROUND_OBSTACLE_SPEED, scaleRatio, finish)
+    gasIndicator = new Gas(ctx, laneHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, MAX_PLAYER_GAS, MIN_GAS, STARTING_GAS, availableGas);
+    startingLight = new StartingLight(ctx, gameSpeed, scaleRatio, countdownNum)
 
     const obstaclePotholeImages = OBSTACLE_POTHOLE_CONFIG.map(o => {
         const image = new Image();
@@ -197,6 +209,33 @@ function clearScreen() {
 function updateGameSpeed() {
         let playerSpeed = player.playerSpeed;
         gameSpeed = playerSpeed;
+}
+
+function updateTime(minute, second, millisecond) {
+
+    if (start && !waitingToStart && timerStop) {
+        function setMillisecond() {
+            millisecond += 5;
+            if (millisecond >= 99) millisecond = 0;
+            timer.setMillisecond(millisecond)
+        }
+        function setSecond() {
+            if (second > 60) second = 0;
+            second += 1
+            timer.setSecond(second)
+        }
+        function setMinute() {
+            if (minute > 99) minute = 0;
+            minute += 1
+            timer.setMinute(minute)
+        }
+
+        timerStop = false;
+
+        milliInt = setInterval(setMillisecond, 50)
+        secInt = setInterval(setSecond, 1000)
+        minInt = setInterval(setMinute, 60000)
+    }   
 }
 
 function showStartGame() {
@@ -272,15 +311,23 @@ function reset() {
     finishLine.reset();
     player.reset();
     startingMark.reset();
-
+    gasIndicator.reset()
     gameSpeed = GAME_SPEED_START;
 
     start = false;
     finish = false;
     gameOver = false;
+    timerStop = true;
     hasAddEventListenersForRestart = false;
     waitingToStart = true;
     availableGas = STARTING_GAS;
+    finishTimeout = null;
+    countdownNum = 3;
+
+    timer.reset();
+    millisecond = 0;
+    second = 0;
+    minute = 0;
 }
 
 function gameLoop(currentTime) {
@@ -291,7 +338,7 @@ function gameLoop(currentTime) {
     }
     const frameTimeDelta = currentTime - previousTime;
     previousTime = currentTime;
-    availableGas = player.availableGas
+    availableGas = player.availableGas;
 
     clearScreen();
     // COLLIDE CHECK
@@ -329,9 +376,12 @@ function gameLoop(currentTime) {
         obstacleRampController.update(gameSpeed, frameTimeDelta);
 
         finishLine.update(gameSpeed, frameTimeDelta);
-        // crowd.update(gameSpeed, frameTimeDelta);
+
         startingMark.update(gameSpeed, frameTimeDelta);
-        // score.update(frameTimeDelta);
+
+        updateTime(minute, second, millisecond);
+        timer.update();
+
         updateGameSpeed();
        
         playerShadow.update(player.width, player.height, player.x, player.y, player.startingPositionY, player.laneHeight, player.laneIndex);
@@ -356,11 +406,15 @@ function gameLoop(currentTime) {
         finishLine.update(gameSpeed, frameTimeDelta);
         // crowd.update(gameSpeed, frameTimeDelta);
 
-        gasIndicator.update(availableGas)
-
+        gasIndicator.update(availableGas);
         // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         obstacleRampController.update(gameSpeed, frameTimeDelta);
 
+        timer.finish = finish;
+        clearInterval(milliInt);
+        clearInterval(secInt);
+        clearInterval(minInt);
+        
         // playerShadow.update(player.width, player.height, player.x, player.y, player.startingPositionY, player.laneHeight, player.laneIndex);
         if (!finishTimeout)  {
             finishTimeout = setTimeout(() => {

@@ -56,7 +56,7 @@ export default class Player {
         //
         this.playerSpeed = this.gameSpeed;
         //
-        this.availableGas = availableGas / 100;
+        this.availableGas = availableGas;
         //
         const movingImage1 = new Image();
         movingImage1.src = "./images/player_move_1.png";
@@ -225,9 +225,10 @@ export default class Player {
         
 
         if (this.availableGas > 0 && this.playerWheelie && this.speedUp) {
-            this.availableGas -=  .005;
+            this.availableGas -=  .0005;
             if (this.availableGas <= 0 && this.playerWheelie) {
                 this.speedUp = false;
+                this.keyUpSpeed = true;
                 this.playerWheelie = false;
                 this.wheelieAnimationTimer = this.WHEELIE_ANIMATION_TIMER;
                 this.playerwheelieDown = true;
@@ -382,7 +383,7 @@ export default class Player {
         this.speedUp = false;
         this.playerSpeed = this.GAME_SPEED_START;
         // WHEELIE
-        this.availableGas = availableGas;
+        this.availableGas = 0.75;
         this.playerWheelie = false;
         this.playerWheelieUp = false;
         this.playerwheelieDown = false;

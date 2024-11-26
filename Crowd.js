@@ -15,6 +15,7 @@ export default class Crowd {
     }
 
     draw() {
+        
         this.ctx.drawImage(this.crowdImage, this.x, this.y, this.width, this.height);
 
         this.ctx.drawImage(this.crowdImage, this.x + this.width, this.y, this.width, this.height);

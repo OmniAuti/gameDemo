@@ -26,7 +26,7 @@ export default class Player {
     SPEED_INCREMENT = 0.01;
 
     playerWheelie = false;
-    playerWheelieBoost = false;
+    playerWheelieUp = false;
     playerwheelieDown = false;
     playerResetAfterWheelie = false;
 
@@ -56,7 +56,7 @@ export default class Player {
         //
         this.playerSpeed = this.gameSpeed;
         //
-        this.availableGas = availableGas;
+        this.availableGas = availableGas / 100;
         //
         const movingImage1 = new Image();
         movingImage1.src = "./images/player_move_1.png";
@@ -106,9 +106,10 @@ export default class Player {
         if (!this.waitingToStart) return;
 
         // WHEELIE
-        if (e.code === "Space" && this.availableGas > 0 && !this.playerWheelie) {
+        if (e.code === "Space" && this.availableGas > 0 && !this.playerWheelie && this.speedUp) {
             this.playerWheelie = true;
             this.playerwheelieDown = false;
+
         } else if (this.availableGas <= 0 && !this.playerWheelie) {
             this.playerWheelie = false;
             this.playerwheelieDown = false;
@@ -144,13 +145,14 @@ export default class Player {
         if (!this.waitingToStart) return;
 
         // WHEELIE
-        if (e.code === "Space") {
+        if (e.code === "Space" && this.availableGas > 0) {
             this.playerWheelie = false;
             this.wheelieAnimationTimer = this.WHEELIE_ANIMATION_TIMER;
             this.playerwheelieDown = true;
             this.playerResetAfterWheelie = true;
         }
-        if (this.playerWheelie || this.playerwheelieDown) return; 
+
+        // if (this.playerWheelie || this.playerwheelieDown) return; 
         // TURNING
         if (e.code === "ArrowRight") {
             this.speedUp = false;
@@ -171,26 +173,35 @@ export default class Player {
             if (this.gameSpeed < this.GAME_SPEED_MAX) {
                 this.playerSpeed = this.gameSpeed += this.SPEED_INCREMENT;
             }
+        } else if (this.playerWheelie === true && this.x < this.canvas.width * .5) {
+            // SPEED_INCREMENT
+            this.x += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
+            if (this.gameSpeed < this.GAME_SPEED_GAS) {
+                this.playerSpeed = this.gameSpeed += this.SPEED_INCREMENT;
+            }
         }
     }
     //
     decreaseSpeed(frameTimeDelta) {
         if (this.finishLine) return;
-        
+
         if (!this.playerResetAfterWheelie && this.speedUp === false && this.x > 20) {
-            console.log('NORMAL D')
             this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
             if (this.gameSpeed > this.GAME_SPEED_START) {
                 this.playerSpeed = this.gameSpeed -= this.SPEED_INCREMENT;
             }
         } else if (this.playerResetAfterWheelie && this.speedUp === true && this.x > this.canvas.width * .25) {
-            console.log('D IT')
             this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
             if (this.gameSpeed > this.GAME_SPEED_MAX) {
                 this.playerSpeed = this.gameSpeed -= this.SPEED_INCREMENT;
             }
             if (this.playerResetAfterWheelie && this.x <= this.canvas.width * .25 && this.gameSpeed <= this.GAME_SPEED_MAX){
                 this.playerResetAfterWheelie = false;
+            }
+        } else if (this.speedUp === false && this.x > 20) {
+            this.x -= this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
+            if (this.gameSpeed > this.GAME_SPEED_START) {
+                this.playerSpeed = this.gameSpeed -= this.SPEED_INCREMENT;
             }
         }
     }
@@ -204,14 +215,26 @@ export default class Player {
         } else if (!this.jumpInProgress && !this.falling && !this.playerWheelie && !this.playerwheelieDown) {
             this.moving(gameSpeed, frameTimeDelta);
         } else if (this.playerWheelie && !this.falling) {
-            this.wheelieBoost(gameSpeed, frameTimeDelta);
+            this.wheelieUp(gameSpeed, frameTimeDelta);
         } else if (this.playerwheelieDown && !this.playerWheelie && !this.falling) {
             this.wheelieDown(gameSpeed, frameTimeDelta);
-
         }
+        
         this.increaseSpeed(frameTimeDelta)
         this.decreaseSpeed(frameTimeDelta)
         
+
+        if (this.availableGas > 0 && this.playerWheelie && this.speedUp) {
+            this.availableGas -=  .005;
+            if (this.availableGas <= 0 && this.playerWheelie) {
+                this.speedUp = false;
+                this.playerWheelie = false;
+                this.wheelieAnimationTimer = this.WHEELIE_ANIMATION_TIMER;
+                this.playerwheelieDown = true;
+                this.playerResetAfterWheelie = true;
+            }
+        }
+
         if (this.moveLeft) {
             this.image = this.turnUpImage;
         } else if (this.moveRight) {
@@ -251,7 +274,7 @@ export default class Player {
         this.moveAnimationTimer -= frameTimeDelta * gameSpeed / 1.5;
     }
     //
-    wheelieBoost(gameSpeed, frameTimeDelta) {
+    wheelieUp(gameSpeed, frameTimeDelta) {
         if (this.finishLine) return;
 
         if (this.wheelieAnimationTimer > 0) {
@@ -267,14 +290,6 @@ export default class Player {
                 // TRIGGER LOWERING OF WHEELIE
             }
             this.wheelieAnimationTimer -= frameTimeDelta * gameSpeed * 4;
-        } 
-
-        if (this.playerWheelie === true && this.x < this.canvas.width * .5) {
-            // SPEED_INCREMENT
-            this.x += this.MOVE_SPEED * frameTimeDelta * this.scaleRatio;
-            if (this.gameSpeed < this.GAME_SPEED_GAS) {
-                this.playerSpeed = this.gameSpeed += this.SPEED_INCREMENT;
-            }
         }
     }
     //
@@ -309,7 +324,7 @@ export default class Player {
 
         // this.image = this.wheelieImage;    {
             this.playerWheelie = false;
-            this.playerWheelieBoost = false;
+            this.playerWheelieUp = false;
             this.playerwheelieDown = false;
             this.image = this.inclineImages[0]
     }
@@ -365,12 +380,13 @@ export default class Player {
         this.moveLeft = false;
         this.moveRight = false;
         this.speedUp = false;
-        this.playerSpeed = this.gameSpeed;
+        this.playerSpeed = this.GAME_SPEED_START;
         // WHEELIE
-        this.availableGas = 50;
+        this.availableGas = availableGas;
         this.playerWheelie = false;
-        this.playerWheelieBoost = false;
+        this.playerWheelieUp = false;
         this.playerwheelieDown = false;
         this.playerResetAfterWheelie = false;
+        this.waitingToStart = true;
     }
 }

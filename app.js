@@ -42,8 +42,8 @@ const BACKGROUND_BLOCK_WIDTH = 2688;
 const GROUND_OBSTACLE_SPEED = 0.25;
 //
 const MAX_PLAYER_GAS = 100;
-const STARTING_PLAYER_GAS = 75;
-const MIN_PLAYER_GAS = 0;
+const STARTING_GAS = 75;
+const MIN_GAS = 0;
 //
 const DEFAULT_COLOR_YELLOW = "#ffdd2b";
 const DEFAULT_COLOR_GREEN = "#359e4a";
@@ -95,6 +95,8 @@ let countdown = false;
 let countdownActive = false;
 let countdownNum = 3;
 
+let availableGas = STARTING_GAS;
+
 // SCREEN
 function setScreen() {
     scaleRatio = getScaleRatio();
@@ -137,7 +139,7 @@ function createSprites() {
     const laneHeightInGame = LANE_HEIGHT * scaleRatio;
     const curbHeightInGame = CURB_HEIGHT * scaleRatio + canvas.height / 16;
 
-    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, start, STARTING_PLAYER_GAS)
+    player = new Player(ctx, playerWidthInGame, playerHeightInGame, minJumpHeightInGame, maxJumpHeightInGame, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, start, availableGas)
     playerShadow = new PlayerShadow(ctx, shadowWidthInGame, shadowHeightInGame, scaleRatio);
     // grass = new Grass(ctx, canvas.width, canvas.height, GROUND_OBSTACLE_SPEED, scaleRatio, curbHeightInGame);
     // crowd = new Crowd(ctx, crowdWidthInGame, crowdHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio);
@@ -149,7 +151,7 @@ function createSprites() {
     startingMark = new StartingMark(ctx, startingMarkWidthInGame, startingMarkHeightInGame, scaleRatio, GROUND_OBSTACLE_SPEED, laneHeightInGame, curbHeightInGame, playerWidthInGame);
 
     timer = new Timer(ctx, GROUND_OBSTACLE_SPEED, scaleRatio)
-    gasIndicator = new Gas(ctx, laneHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, MAX_PLAYER_GAS, MIN_PLAYER_GAS, STARTING_PLAYER_GAS)
+    gasIndicator = new Gas(ctx, laneHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, MAX_PLAYER_GAS, MIN_GAS, STARTING_GAS, availableGas)
 
     const obstaclePotholeImages = OBSTACLE_POTHOLE_CONFIG.map(o => {
         const image = new Image();
@@ -278,7 +280,7 @@ function reset() {
     gameOver = false;
     hasAddEventListenersForRestart = false;
     waitingToStart = true;
-    player.waitingToStart = start;
+    availableGas = STARTING_GAS;
 }
 
 function gameLoop(currentTime) {
@@ -289,6 +291,7 @@ function gameLoop(currentTime) {
     }
     const frameTimeDelta = currentTime - previousTime;
     previousTime = currentTime;
+    availableGas = player.availableGas
 
     clearScreen();
     // COLLIDE CHECK
@@ -332,7 +335,9 @@ function gameLoop(currentTime) {
         updateGameSpeed();
        
         playerShadow.update(player.width, player.height, player.x, player.y, player.startingPositionY, player.laneHeight, player.laneIndex);
-        player.update(gameSpeed, frameTimeDelta, scaleRatio);
+        player.update(gameSpeed, frameTimeDelta);
+        gasIndicator.update(availableGas)
+
         // start finish
         if (finishLine.collideWithFinish(player)) {
             start = false;
@@ -351,6 +356,7 @@ function gameLoop(currentTime) {
         finishLine.update(gameSpeed, frameTimeDelta);
         // crowd.update(gameSpeed, frameTimeDelta);
 
+        gasIndicator.update(availableGas)
 
         // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         obstacleRampController.update(gameSpeed, frameTimeDelta);

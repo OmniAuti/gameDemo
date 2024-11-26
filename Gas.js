@@ -3,7 +3,7 @@ export default class Gas {
         DEFAULT_COLOR_GREEN = "#359e4a";
         DEFAULT_COLOR_RED = "#e35353";
 
-    constructor(ctx, height, speed, scaleRatio, maxGas, minGas, startingGas) {
+    constructor(ctx, height, speed, scaleRatio, maxGas, minGas, startingGas, availableGas) {
         this.ctx = ctx;
         this.canvas = ctx.canvas;
         this.height = height;
@@ -15,6 +15,8 @@ export default class Gas {
 
         this.x = this.canvas.width / 4;
         this.y = this.canvas.height - this.canvas.height / 21;
+
+        this.availableGas = availableGas * .001;
     }
 
     draw() {
@@ -29,8 +31,24 @@ export default class Gas {
         this.ctx.fillStyle = "#000000";
         this.ctx.fillRect(this.x - this.height * .18, this.y + this.height * -.115, this.canvas.width / 9.5, this.height * 1.25);
         this.ctx.fillStyle = this.DEFAULT_COLOR_RED;
-        this.ctx.fillRect(this.x, this.y, this.canvas.width / 10, this.height);
+        this.ctx.fillRect(this.x, this.y, this.canvas.width * .1, this.height);
+        this.ctx.fillStyle = this.DEFAULT_COLOR_GREEN;
+        this.ctx.fillRect(this.x, this.y, this.canvas.width * this.availableGas, this.height);
 
         // THEN DOWN HERE HAVE THE OVERLAPPING FULL GAS
+    }
+
+    update(currentGas) {
+        if (currentGas <= 0) {
+            currentGas = 0;
+        }
+        this.availableGas = currentGas * 0.1;
+
+        this.ctx.fillStyle = this.DEFAULT_COLOR_GREEN;
+        this.ctx.fillRect(this.x, this.y, this.canvas.width * this.availableGas , this.height);
+    }
+
+    reset() {
+        this.availableGas = availableGas;
     }
 }

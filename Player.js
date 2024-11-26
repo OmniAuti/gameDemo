@@ -383,7 +383,7 @@ export default class Player {
         this.speedUp = false;
         this.playerSpeed = this.GAME_SPEED_START;
         // WHEELIE
-        this.availableGas = 0.75;
+        this.availableGas = 0.075;
         this.playerWheelie = false;
         this.playerWheelieUp = false;
         this.playerwheelieDown = false;

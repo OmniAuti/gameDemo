@@ -3,7 +3,7 @@ import ObstaclePothole from "./ObstaclePothole.js"
 export default class ObstaclePotholeController {
 
     OBSTACLE_INTERVAL_MIN = 500
-    OBSTACLE_INTERVAL_MAX = 3000
+    OBSTACLE_INTERVAL_MAX = 1500
     
     nextObstaclePotholeInterval = null;
     obstaclesPothole = [];

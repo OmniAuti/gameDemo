@@ -1,7 +1,5 @@
 import Player from "./Player.js";
 import PlayerShadow from "./PlayerShadow.js";
-import Grass from "./Grass.js";
-import Crowd from "./Crowd.js";
 import Ground from "./Ground.js";
 import FinishLine from "./FinishLine.js";
 import StartingMark from "./StartingMark.js";
@@ -103,6 +101,7 @@ let countdownNum = 3;
 var milliInt;
 var secInt;
 var minInt;
+
 var millisecond = 0;
 var second = 0;
 var minute = 0;
@@ -215,7 +214,7 @@ function updateTime(minute, second, millisecond) {
 
     if (start && !waitingToStart && timerStop) {
         function setMillisecond() {
-            millisecond += 5;
+            millisecond += 1;
             if (millisecond >= 99) millisecond = 0;
             timer.setMillisecond(millisecond)
         }
@@ -232,7 +231,7 @@ function updateTime(minute, second, millisecond) {
 
         timerStop = false;
 
-        milliInt = setInterval(setMillisecond, 50)
+        milliInt = setInterval(setMillisecond, 10)
         secInt = setInterval(setSecond, 1000)
         minInt = setInterval(setMinute, 60000)
     }   
@@ -283,6 +282,12 @@ function showGameOver() {
         x = canvas.width / 2.9;
         y = canvas.height / 1.25;
         ctx.fillText("PRESS ANY BUTTON TO PLAY AGAIN", x, y);
+
+        fontSize = 16 * scaleRatio;
+        ctx.font = `${fontSize}px "bayard-regular"`;
+        x = canvas.width / 2.9;
+        y = canvas.height / 1.5;
+        ctx.fillText(timer.timerString, x, y);
 }
 
 function restartGameSetup() {
@@ -343,16 +348,16 @@ function gameLoop(currentTime) {
     clearScreen();
     // COLLIDE CHECK
     //Pothole
-    // if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
-    //     player.speedUp = false;
-    //     if (keyUpPlayer === null && player.keyUpSpeed === false) {
-    //         setTimeout(() => {
-    //             player.speedUp = true;
-    //             keyUpPlayer = null;
-    //         }, 500);     
-    //     }
-    //     keyUpPlayer = 1;
-    // }
+    if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
+        player.speedUp = false;
+        if (keyUpPlayer === null && player.keyUpSpeed === false) {
+            setTimeout(() => {
+                player.speedUp = true;
+                keyUpPlayer = null;
+            }, 500);     
+        }
+        keyUpPlayer = 1;
+    }
 
     // // RAMP
     if (obstacleRampController.collideWith(player)) {
@@ -372,7 +377,7 @@ function gameLoop(currentTime) {
         ground.update(gameSpeed, frameTimeDelta);
         backgroundCity.update(gameSpeed, frameTimeDelta);
         backgroundBlock.update(gameSpeed, frameTimeDelta);
-        // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
+        obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         obstacleRampController.update(gameSpeed, frameTimeDelta);
 
         finishLine.update(gameSpeed, frameTimeDelta);
@@ -404,10 +409,9 @@ function gameLoop(currentTime) {
         backgroundCity.update(gameSpeed, frameTimeDelta);
         backgroundBlock.update(gameSpeed, frameTimeDelta);
         finishLine.update(gameSpeed, frameTimeDelta);
-        // crowd.update(gameSpeed, frameTimeDelta);
 
         gasIndicator.update(availableGas);
-        // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
+        obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         obstacleRampController.update(gameSpeed, frameTimeDelta);
 
         timer.finish = finish;
@@ -431,7 +435,7 @@ function gameLoop(currentTime) {
     ground.draw();
     finishLine.draw();
 
-    // obstaclePotholeController.draw();
+    obstaclePotholeController.draw();
     obstacleRampController.draw();
 
     startingMark.draw();

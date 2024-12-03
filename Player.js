@@ -318,16 +318,18 @@ export default class Player {
     // NEED TO ROTATE
     // HEIGHT BASED ON SPEED 
 
-    handleRamp(gameSpeed, frameTimeDelta) {
+    handleRamp(gameSpeed, frameTimeDelta, reaction, climb, distance, rampHeight, rampWidth, playerX , rampX) {
         // NEED TO REDUCE SPEED SLIGHTLY 
         // NEED TO ROTATE
         // HEIGHT BASED ON SPEED 
+        console.log(gameSpeed, frameTimeDelta, reaction, climb, distance, rampHeight, rampWidth, x, xy);
 
-        // this.image = this.wheelieImage;    {
-            this.playerWheelie = false;
-            this.playerWheelieUp = false;
-            this.playerwheelieDown = false;
-            this.image = this.inclineImages[0]
+        console.log(x, xy)
+
+        this.playerWheelie = false;
+        this.playerWheelieUp = false;
+        this.playerwheelieDown = false;
+        this.image = this.inclineImages[0]
     }
 
     jump(frameTimeDelta) {
@@ -335,27 +337,27 @@ export default class Player {
             this.jumpInProgress = true;
         }
 
-        if (this.jumpInProgress && !this.falling) {
-            if (this.y > this.canvas.height - this.minJumpHeight 
-                || 
-                (this.y > this.canvas.height - this.maxJumpHeight && this.playerOnRamp)) {
-                this.y -= this.JUMP_SPEED * frameTimeDelta * this.scaleRatio;
-                // this.ctx.rotate(45)
-            } else {
-                this.falling = true;
-            }
-        } else if (this.jumpInProgress && this.falling) {
-             if (this.y < this.startingPositionY - this.laneHeight * this.laneIndex) {
-                this.y += this.GRAVITY * frameTimeDelta * this.scaleRatio;
-                if (this.y + this.height > this.canvas.height) {
-                    this.y = this.startingPositionY - this.laneHeight * this.laneIndex;
-                }
-             } else {
-                this.falling = false;
-                this.jumpInProgress = false;
-                this.playerOnRamp = false;
-             }
-        }
+        // if (this.jumpInProgress && !this.falling) {
+        //     if (this.y > this.canvas.height - this.minJumpHeight 
+        //         || 
+        //         (this.y > this.canvas.height - this.maxJumpHeight && this.playerOnRamp)) {
+        //         this.y -= this.JUMP_SPEED * frameTimeDelta * this.scaleRatio;
+        //         // this.ctx.rotate(45)
+        //     } else {
+        //         this.falling = true;
+        //     }
+        // } else if (this.jumpInProgress && this.falling) {
+        //      if (this.y < this.startingPositionY - this.laneHeight * this.laneIndex) {
+        //         this.y += this.GRAVITY * frameTimeDelta * this.scaleRatio;
+        //         if (this.y + this.height > this.canvas.height) {
+        //             this.y = this.startingPositionY - this.laneHeight * this.laneIndex;
+        //         }
+        //      } else {
+        //         this.falling = false;
+        //         this.jumpInProgress = false;
+        //         this.playerOnRamp = false;
+        //      }
+        // }
     }
 
     draw() {

@@ -49,6 +49,9 @@ export default class StartingMark {
 
     draw() {
         this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        this.ctx.drawImage(this.image, this.x, this.y  - (this.laneHeight * 1.1), this.width, this.height);
+        this.ctx.drawImage(this.image, this.x, this.y  - (this.laneHeight * -1.1), this.width, this.height);
+        this.ctx.drawImage(this.image, this.x, this.y  - (this.laneHeight * 2.1), this.width, this.height);
     }
 
     reset() {

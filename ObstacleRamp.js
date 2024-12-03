@@ -1,5 +1,5 @@
 export default class ObstacleRamp {
-    constructor(ctx, x, y, width, height, image, reactionValue) {
+    constructor(ctx, x, y, width, height, image, reactionValue, climbValue, distanceValue) {
         this.ctx = ctx;
         this.x = x;
         this.y = y;
@@ -7,6 +7,8 @@ export default class ObstacleRamp {
         this.height = height;
         this.image = image;
         this.reaction = reactionValue;
+        this.climb = climbValue;
+        this.distance = distanceValue;
     }
 
     update(speed, gameSpeed, frameTimeDelta, scaleRatio) {

@@ -16,7 +16,8 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const GAME_SPEED_END = .25;
-const GAME_SPEED_START = .65;
+// const GAME_SPEED_START = .65;
+const GAME_SPEED_START = .25;
 const GAME_SPEED_MAX = 1;
 
 const GAME_WIDTH = 714;
@@ -32,8 +33,7 @@ const STARTING_MARK_HEIGHT = 10;
 const FINISH_WIDTH = 1000;
 const LANE_HEIGHT = 11;
 const CURB_HEIGHT = 7;
-const CROWD_HEIGHT = 60;
-const CROWD_WIDTH = 1456;
+
 const BACKGROUND_CITY_HEIGHT = 528;
 const BACKGROUND_CITY_WIDTH = 2044;
 const BACKGROUND_BLOCK_HEIGHT = 488;
@@ -52,15 +52,16 @@ const DEFAULT_BACKGROUND_COLOR = "#b2b2b1";
 const SHADOW_WIDTH = 10;
 const SHADOW_HEIGHT = 5;
 
-const OBSTACLE_POTHOLE_CONFIG = [
-    {width: 24 / 1.5, height: 13 / 1.5, image: 'images/obstacle_potholeOne.png'},
-    {width: 24 / 1.5, height: 13 / 1.5, image: 'images/obstacle_potholeTwo.png'},
-]
+// const OBSTACLE_POTHOLE_CONFIG = [
+//     {width: 24 / 1.5, height: 13 / 1.5, image: 'images/obstacle_potholeOne.png'},
+//     {width: 24 / 1.5, height: 13 / 1.5, image: 'images/obstacle_potholeTwo.png'},
+// ]
 
 const OBSTACLE_RAMP_CONFIG = [
-    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/RampA.png', reaction: 2},
-    {width: 72 / 1.5, height: 64 / 1.5, image: 'images/RampB.png', reaction: 2},
-    {width: 72 / 1.5, height: 81 / 1.5, image: 'images/RampC.png', reaction: 3},
+    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/RampA.png', distance: 3, climb: 3, reaction: 2},
+    {width: 72 / 1.5, height: 64, image: 'images/RampB.png', distance: 2, climb: 2, reaction: 2},
+    {width: 72 / 1.5, height: 81, image: 'images/RampC.png', distance: 2, climb: 1, reaction: 3},
+    {width: 16 / 1.75, height: 40 / 2, image: 'images/RampD.png', distance: 4, climb: 4, reaction: 4},
 ]
 
 // GAME OBJECTS
@@ -110,8 +111,8 @@ let availableGas = STARTING_GAS;
 // SCREEN
 function setScreen() {
     scaleRatio = getScaleRatio();
-    canvas.width = GAME_WIDTH * scaleRatio
-    canvas.height = GAME_HEIGHT * scaleRatio
+    canvas.width = (GAME_WIDTH * scaleRatio).toFixed(0)
+    canvas.height = (GAME_HEIGHT * scaleRatio).toFixed(0)
     createSprites();
     resizeCheck = null;
 }
@@ -134,8 +135,6 @@ function createSprites() {
     const minJumpHeightInGame = MIN_JUMP_HEIGHT * scaleRatio;
     const maxJumpHeightInGame = MAX_JUMP_HEIGHT * scaleRatio;
 
-    const crowdWidthInGame = CROWD_WIDTH * scaleRatio;
-    const crowdHeightInGame = CROWD_HEIGHT * scaleRatio;
     const backgroundCityWidthInGame = BACKGROUND_CITY_WIDTH * scaleRatio;
     const backgroundCityHeightInGame = BACKGROUND_CITY_HEIGHT * scaleRatio;
     const backgroundBlockWidthInGame = BACKGROUND_BLOCK_WIDTH * scaleRatio;
@@ -164,25 +163,27 @@ function createSprites() {
     gasIndicator = new Gas(ctx, laneHeightInGame, GROUND_OBSTACLE_SPEED, scaleRatio, MAX_PLAYER_GAS, MIN_GAS, STARTING_GAS, availableGas);
     startingLight = new StartingLight(ctx, gameSpeed, scaleRatio, countdownNum)
 
-    const obstaclePotholeImages = OBSTACLE_POTHOLE_CONFIG.map(o => {
+    // const obstaclePotholeImages = OBSTACLE_POTHOLE_CONFIG.map(o => {
+    //     const image = new Image();
+    //     image.src = o.image;
+    //     return {
+    //         image: image,
+    //         width: o.width * scaleRatio,
+    //         height: o.height * scaleRatio,
+    //     };
+    // });
+
+    // obstaclePotholeController = new ObstaclePotholeController(ctx, obstaclePotholeImages, scaleRatio, GROUND_OBSTACLE_SPEED, laneHeightInGame, curbHeightInGame);
+   
+    const obstacleRampImages = OBSTACLE_RAMP_CONFIG.map(o => {
         const image = new Image();
         image.src = o.image;
         return {
             image: image,
             width: o.width * scaleRatio,
             height: o.height * scaleRatio,
-        };
-    });
-
-    obstaclePotholeController = new ObstaclePotholeController(ctx, obstaclePotholeImages, scaleRatio, GROUND_OBSTACLE_SPEED, laneHeightInGame, curbHeightInGame);
-   
-    const obstacleRampImages = OBSTACLE_RAMP_CONFIG.map(o => {
-        const image = new Image();
-        image.src = o.image;
-        return {
-            image:image,
-            width: o.width * scaleRatio,
-            height: o.height * scaleRatio,
+            distance: o.distance,
+            climb: o.climb,
             reaction: o.reaction,
         };
     });
@@ -348,27 +349,35 @@ function gameLoop(currentTime) {
     clearScreen();
     // COLLIDE CHECK
     //Pothole
-    if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
-        player.speedUp = false;
-        if (keyUpPlayer === null && player.keyUpSpeed === false) {
-            setTimeout(() => {
-                player.speedUp = true;
-                keyUpPlayer = null;
-            }, 500);     
-        }
-        keyUpPlayer = 1;
-    }
+    // if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
+    //     player.speedUp = false;
+    //     if (keyUpPlayer === null && player.keyUpSpeed === false) {
+    //         setTimeout(() => {
+    //             player.speedUp = true;
+    //             keyUpPlayer = null;
+    //         }, 500);     
+    //     }
+    //     keyUpPlayer = 1;
+    // }
 
     // // RAMP
     if (obstacleRampController.collideWith(player)) {
         playerShadow.shadowActive = true;
+        // only here
+        console.log(player.playerOnRamp)
+        if (!player.playerOnRamp) {
+            console.log('lasjdhflkasjdf')
+            const halfOfPlayerX = (player.width / 2) + player.x;
+            const halfOfRampX = (obstacleRampController.widthValue / 2) + (player.width + player.x);
+            player.handleRamp(gameSpeed, frameTimeDelta, obstacleRampController.reactionValue, obstacleRampController.climbValue, obstacleRampController.distanceValue, obstacleRampController.heightValue, obstacleRampController.widthValue, halfOfPlayerX, halfOfRampX)
+        }
+
         player.playerOnRamp = true;
-        player.playerRampReaction = obstacleRampController.reactionValue;
-    } else {
-        player.playerRampReaction = 0;
-        player.playerOnRamp = false;
-    }
+        
+    }   
+
     if (!player.jumpInProgress) {
+        // only here
         playerShadow.shadowActive = false;
     }
     
@@ -377,7 +386,8 @@ function gameLoop(currentTime) {
         ground.update(gameSpeed, frameTimeDelta);
         backgroundCity.update(gameSpeed, frameTimeDelta);
         backgroundBlock.update(gameSpeed, frameTimeDelta);
-        obstaclePotholeController.update(gameSpeed, frameTimeDelta);
+
+        // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         obstacleRampController.update(gameSpeed, frameTimeDelta);
 
         finishLine.update(gameSpeed, frameTimeDelta);
@@ -411,7 +421,7 @@ function gameLoop(currentTime) {
         finishLine.update(gameSpeed, frameTimeDelta);
 
         gasIndicator.update(availableGas);
-        obstaclePotholeController.update(gameSpeed, frameTimeDelta);
+        // obstaclePotholeController.update(gameSpeed, frameTimeDelta);
         obstacleRampController.update(gameSpeed, frameTimeDelta);
 
         timer.finish = finish;
@@ -435,7 +445,7 @@ function gameLoop(currentTime) {
     ground.draw();
     finishLine.draw();
 
-    obstaclePotholeController.draw();
+    // obstaclePotholeController.draw();
     obstacleRampController.draw();
 
     startingMark.draw();

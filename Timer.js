@@ -10,6 +10,7 @@ export default class Timer {
         this.speed = speed;
         this.scaleRatio = scaleRatio;
         this.finish = finish;
+        this.timerString = "";
 
         this.x = this.canvas.width / 2;
         this.y = this.canvas.height - this.canvas.height * 0.025;
@@ -60,6 +61,8 @@ export default class Timer {
         } else {
             this.millisecond = this.millisecond;
         }
+
+        this.timerString = `TIME ${this.minute}:${this.second}:${this.millisecond}`;
     }
 
     draw() {
@@ -74,6 +77,8 @@ export default class Timer {
 
     // MAYBE HAVE THE RECORD SET BELOW
     reset() {
+        this.finish = false;
+        
         this.millisecond = 0;
         this.second = 0;
         this.minute = 0;

@@ -16,8 +16,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const GAME_SPEED_END = .25;
-// const GAME_SPEED_START = .65;
-const GAME_SPEED_START = .25;
+const GAME_SPEED_START = .65;
 const GAME_SPEED_MAX = 1;
 
 const GAME_WIDTH = 714;
@@ -58,10 +57,10 @@ const SHADOW_HEIGHT = 5;
 // ]
 
 const OBSTACLE_RAMP_CONFIG = [
-    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/RampA.png', distance: 3, climb: 3, reaction: 2},
-    {width: 72 / 1.5, height: 64, image: 'images/RampB.png', distance: 2, climb: 2, reaction: 2},
-    {width: 72 / 1.5, height: 81, image: 'images/RampC.png', distance: 2, climb: 1, reaction: 3},
-    {width: 16 / 1.75, height: 40 / 2, image: 'images/RampD.png', distance: 4, climb: 4, reaction: 4},
+    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/RampA.png', distance: 3, climb: 1, reaction: 2},
+    {width: 72 / 1.5, height: 64, image: 'images/RampB.png', distance: 2, climb: 3, reaction: 2},
+    {width: 72 / 1.5, height: 81, image: 'images/RampC.png', distance: 2, climb: 4, reaction: 3},
+    {width: 16 / 1.75, height: 40 / 2, image: 'images/RampD.png', distance: 4, climb: 3, reaction: 1},
 ]
 
 // GAME OBJECTS
@@ -108,6 +107,7 @@ var second = 0;
 var minute = 0;
 
 let availableGas = STARTING_GAS;
+
 // SCREEN
 function setScreen() {
     scaleRatio = getScaleRatio();
@@ -179,6 +179,7 @@ function createSprites() {
         const image = new Image();
         image.src = o.image;
         return {
+            id: o.id,
             image: image,
             width: o.width * scaleRatio,
             height: o.height * scaleRatio,
@@ -334,6 +335,8 @@ function reset() {
     millisecond = 0;
     second = 0;
     minute = 0;
+
+    rampControl = false;
 }
 
 function gameLoop(currentTime) {
@@ -348,6 +351,7 @@ function gameLoop(currentTime) {
 
     clearScreen();
     // COLLIDE CHECK
+
     //Pothole
     // if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
     //     player.speedUp = false;
@@ -360,21 +364,20 @@ function gameLoop(currentTime) {
     //     keyUpPlayer = 1;
     // }
 
-    // // RAMP
+    // RAMP
     if (obstacleRampController.collideWith(player)) {
-        playerShadow.shadowActive = true;
-        // only here
-        console.log(player.playerOnRamp)
+        // console.log(player.playerOnRamp, rampControl)
         if (!player.playerOnRamp) {
-            console.log('lasjdhflkasjdf')
-            const halfOfPlayerX = (player.width / 2) + player.x;
-            const halfOfRampX = (obstacleRampController.widthValue / 2) + (player.width + player.x);
-            player.handleRamp(gameSpeed, frameTimeDelta, obstacleRampController.reactionValue, obstacleRampController.climbValue, obstacleRampController.distanceValue, obstacleRampController.heightValue, obstacleRampController.widthValue, halfOfPlayerX, halfOfRampX)
+            //
+            player.obstacleReaction = obstacleRampController.reactionValue
+            player.obstacleClimb = obstacleRampController.climbValue
+            player.obstacleDistance = obstacleRampController.distanceValue
+            player.obstacleHeight = obstacleRampController.heightValue
+            player.obstacleWidth = obstacleRampController.widthValue
+            //
+            player.jumpInProgress = true;
         }
-
-        player.playerOnRamp = true;
-        
-    }   
+    }
 
     if (!player.jumpInProgress) {
         // only here

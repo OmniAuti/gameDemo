@@ -1,5 +1,5 @@
 export default class ObstacleRamp {
-    constructor(ctx, x, y, width, height, image, reactionValue, climbValue, distanceValue) {
+    constructor(ctx, x, y, width, height, image, reactionValue, climbValue, distanceValue, id) {
         this.ctx = ctx;
         this.x = x;
         this.y = y;

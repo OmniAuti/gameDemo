@@ -32,6 +32,14 @@ export default class Player {
 
     finishLine = false;
 
+    // OBSTACLE VARIABLES
+    obstacleReaction = null;
+    obstacleClimb = null;
+    obstacleDistance = null;
+    obstacleHeight = null;
+    obstacleWidth = null;
+    
+
     constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, waitingToStart, availableGas) {
 
         this.ctx = ctx;
@@ -210,8 +218,8 @@ export default class Player {
         // USE THIS STOP CONTROLS AND DO WHEELY - Also controls sprite image
         if (this.finishLine) {
             this.image = this.wheelieImage;        
-        } else if (this.playerOnRamp || this.jumpInProgress) {
-            this.handleRamp(gameSpeed, frameTimeDelta);
+        } else if (this.jumpInProgress) {
+            this.jump(frameTimeDelta);
         } else if (!this.jumpInProgress && !this.falling && !this.playerWheelie && !this.playerwheelieDown) {
             this.moving(gameSpeed, frameTimeDelta);
         } else if (this.playerWheelie && !this.falling) {
@@ -223,7 +231,6 @@ export default class Player {
         this.increaseSpeed(frameTimeDelta)
         this.decreaseSpeed(frameTimeDelta)
         
-
         if (this.availableGas > 0 && this.playerWheelie && this.speedUp) {
             this.availableGas -=  .0005;
             if (this.availableGas <= 0 && this.playerWheelie) {
@@ -244,7 +251,7 @@ export default class Player {
         //
         this.turn(frameTimeDelta);
         //
-        this.jump(frameTimeDelta)
+        // this.jump(frameTimeDelta)
     }
     // CHANGE LANES
     turn(frameTimeDelta) {
@@ -318,25 +325,30 @@ export default class Player {
     // NEED TO ROTATE
     // HEIGHT BASED ON SPEED 
 
-    handleRamp(gameSpeed, frameTimeDelta, reaction, climb, distance, rampHeight, rampWidth, playerX , rampX) {
-        // NEED TO REDUCE SPEED SLIGHTLY 
-        // NEED TO ROTATE
-        // HEIGHT BASED ON SPEED 
-        console.log(gameSpeed, frameTimeDelta, reaction, climb, distance, rampHeight, rampWidth, x, xy);
+    handleRamp(reaction, climb, distance, rampHeight, rampWidth) {
+        // NEED TO REDUCE SPEED SLIGHTLY for incline
+        // HEIGHT / distance BASED ON SPEED 
+        // console.log(reaction, climb, distance, rampHeight, rampWidth);
+        // console.log(this.playerSpeed);
+        // this.playerWheelie = false;
+        // this.playerWheelieUp = false;
+        // this.playerwheelieDown = false;
+        // // this.image = this.inclineImages[0];
+        // //
+        // this.obstacleReaction = reaction;
+        // this.obstacleClimb = climb;
+        // this.obstacleDistance = distance;
+        // this.obstacleHeight = rampHeight;
+        // this.obstacleWidth = rampWidth;
 
-        console.log(x, xy)
-
-        this.playerWheelie = false;
-        this.playerWheelieUp = false;
-        this.playerwheelieDown = false;
-        this.image = this.inclineImages[0]
+        // this.jumpInProgress = true;
     }
 
     jump(frameTimeDelta) {
-        if (this.playerOnRamp) {
-            this.jumpInProgress = true;
-        }
+        console.log(this.playerSpeed, this.obstacleReaction, this.obstacleClimb, this.obstacleDistance, this.obstacleHeight, this.obstacleWidth);
 
+
+        
         // if (this.jumpInProgress && !this.falling) {
         //     if (this.y > this.canvas.height - this.minJumpHeight 
         //         || 

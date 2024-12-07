@@ -24,7 +24,7 @@ const GAME_HEIGHT = 420;
 const PLAYER_WIDTH = 20 / 1;
 const PLAYER_HEIGHT = 21 / 1;
 const MAX_JUMP_HEIGHT = GAME_HEIGHT / 4;
-const MIN_JUMP_HEIGHT = GAME_HEIGHT / 2;
+const MIN_JUMP_HEIGHT = GAME_HEIGHT / 6;
 const GROUND_WIDTH = 5080;
 const GROUND_HEIGHT = 70;
 const STARTING_MARK_WIDTH = 7;
@@ -335,8 +335,6 @@ function reset() {
     millisecond = 0;
     second = 0;
     minute = 0;
-
-    rampControl = false;
 }
 
 function gameLoop(currentTime) {
@@ -351,7 +349,6 @@ function gameLoop(currentTime) {
 
     clearScreen();
     // COLLIDE CHECK
-
     //Pothole
     // if (obstaclePotholeController.collideWith(player) && !player.playerOnRamp) {
     //     player.speedUp = false;
@@ -363,27 +360,19 @@ function gameLoop(currentTime) {
     //     }
     //     keyUpPlayer = 1;
     // }
-
     // RAMP
     if (obstacleRampController.collideWith(player)) {
-        // console.log(player.playerOnRamp, rampControl)
-        if (!player.playerOnRamp) {
-            //
-            player.obstacleReaction = obstacleRampController.reactionValue
-            player.obstacleClimb = obstacleRampController.climbValue
-            player.obstacleDistance = obstacleRampController.distanceValue
-            player.obstacleHeight = obstacleRampController.heightValue
-            player.obstacleWidth = obstacleRampController.widthValue
+        if (!player.jumpInProgress) {
             //
             player.jumpInProgress = true;
+            //
+            player.obstacleReaction = obstacleRampController.reactionValue;
+            player.obstacleClimb = obstacleRampController.climbValue;
+            player.obstacleDistance = obstacleRampController.distanceValue;
+            player.obstacleHeight = obstacleRampController.heightValue;
+            player.obstacleWidth = obstacleRampController.widthValue;
         }
     }
-
-    if (!player.jumpInProgress) {
-        // only here
-        playerShadow.shadowActive = false;
-    }
-    
     // UPDATE GAME OBJECTS
     if (start) {
         ground.update(gameSpeed, frameTimeDelta);

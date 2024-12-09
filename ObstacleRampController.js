@@ -37,16 +37,15 @@ export default class ObstacleRampController {
     }
 
     createObstacleRamp() {
-        // const index = this.getRandomNumber(0, this.obstacleRampImages.length - 1);
-        const index = 0;
+        const index = this.getRandomNumber(0, this.obstacleRampImages.length - 1);
         const obstacleRampImage = this.obstacleRampImages[index];
-        // console.log(obstacleRampImage)
         let reactionValue = obstacleRampImage.reaction;
         let climbValue = obstacleRampImage.climb;
         let distanceValue = obstacleRampImage.distance;
+        let laneRestrictions = obstacleRampImage.laneRestrictions;
         let id = obstacleRampImage.id
         const x = this.canvas.width * 1.15;
-        const laneIndex = this.getRandomNumber(0, 1);
+        const laneIndex = this.getRandomNumber(0, laneRestrictions);
         // const laneIndex = 0;
         const y = this.canvas.height - obstacleRampImage.height - (this.curbHeightInGame) - (this.laneHeight * laneIndex);
         const obstacleRamp = new ObstacleRamp(this.ctx, x, y, obstacleRampImage.width, obstacleRampImage.height, obstacleRampImage.image, reactionValue, climbValue, distanceValue, id);

@@ -4,7 +4,7 @@ export default class Player {
     moveAnimationTimer = this.MOVE_ANIMATION_TIMER;
     WHEELIE_ANIMATION_TIMER = 500;
     wheelieAnimationTimer = this.WHEELIE_ANIMATION_TIMER;
-    INCLINE_ANIMATION_TIMER = 400;
+    INCLINE_ANIMATION_TIMER = 0;
     inclineAnimationTimer = this.INCLINE_ANIMATION_TIMER;
     JUMP_ANIMATION_TIMER = 20;
     jumpAnimationTimer = this.JUMP_ANIMATION_TIMER
@@ -24,33 +24,31 @@ export default class Player {
     laneIndex = 0;
     MOVE_SPEED = 0.1;
     SPEED_INCREMENT = 0.01;
-
+    // WHEELIE
     playerWheelie = false;
     playerWheelieUp = false;
     playerwheelieDown = false;
     playerResetAfterWheelie = false;
-
+    // FINISH
     finishLine = false;
-
     // OBSTACLE VARIABLES
     obstacleReaction = null;
     obstacleClimb = null;
     obstacleDistance = null;
     obstacleHeight = null;
     obstacleWidth = null;
-
+    // JUMP
     jumpPlayerSpeedVariable = null;
     jumpHeightVariable = null;
     jumpDistanceVariable = null;
     jumpGravityVariable = null;
     maxHeightVariable = null;
     maxWheelie = null;
-    //
+    // INCLINE JUMP
     incline = false;
     inclineReverse = false;
     setJumpVar = false;
-    
-
+    // CONSTRUCTOR
     constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio, gameSpeed, GAME_SPEED_START, GAME_SPEED_MAX, laneHeightInGame, curbHeightInGame, waitingToStart, availableGas) {
 
         this.ctx = ctx;
@@ -81,7 +79,7 @@ export default class Player {
         movingImage1.src = "./images/player_move_1.png";
         const movingImage2 = new Image();
         movingImage2.src = "./images/player_move_2.png";
-
+        //
         this.movingImages.push(movingImage1);
         this.movingImages.push(movingImage2);
         //
@@ -118,7 +116,7 @@ export default class Player {
         window.addEventListener('keydown', this.keydown);
         window.addEventListener('keyup', this.keyup);
     }
-    // movement
+    // MOVEMENT
     keydown = (e) => {
         if (this.finishLine) return;
         if (this.jumpInProgress) return; 
@@ -162,7 +160,6 @@ export default class Player {
         if (this.finishLine) return;
         if (this.jumpInProgress) return; 
         if (!this.waitingToStart) return;
-
         // WHEELIE
         if (e.code === "Space" && this.availableGas > 0) {
             this.playerWheelie = false;
@@ -170,8 +167,6 @@ export default class Player {
             this.playerwheelieDown = true;
             this.playerResetAfterWheelie = true;
         }
-
-        // if (this.playerWheelie || this.playerwheelieDown) return; 
         // TURNING
         if (e.code === "ArrowRight") {
             this.speedUp = false;
@@ -183,7 +178,7 @@ export default class Player {
             this.keyUpSpeed = false;
         }
     }
-    //
+    // SPEED FUNCTIONS
     increaseSpeed(frameTimeDelta) {
         if (this.finishLine) return;
         if (this.speedUp === true && this.x < this.canvas.width * .25) {
@@ -200,7 +195,7 @@ export default class Player {
             }
         }
     }
-    //
+    // SPEED FUNCTIONS
     decreaseSpeed(frameTimeDelta) {
         if (this.finishLine) return;
 
@@ -252,7 +247,7 @@ export default class Player {
         }
         this.moveAnimationTimer -= frameTimeDelta * gameSpeed / 1.5;
     }
-    //
+    // WHEELIES
     wheelieUp(gameSpeed, frameTimeDelta) {
         if (this.finishLine) return;
 
@@ -291,11 +286,8 @@ export default class Player {
         } 
     }
     // JUMP
-    // NEED TO REDUCE SPEED SLIGHTLY 
-    // NEED TO ROTATE
-    // HEIGHT BASED ON SPEED 
     jump(gameSpeed, frameTimeDelta) {
-
+        // JUMP VARIABLES
         if (!this.setJumpVar) {
             this.incline = true;
             this.jumpPlayerSpeedVariable = this.playerSpeed / 12.5;
@@ -304,67 +296,48 @@ export default class Player {
             this.jumpGravityVariable = this.GRAVITY + (this.obstacleDistance / 100) - this.jumpPlayerSpeedVariable;
             this.maxHeightVariable = this.maxJumpHeight + (this.jumpHeightVariable * this.obstacleReaction);
             this.maxIncline = this.obstacleClimb * 100;
-            console.log(this.maxIncline);
             this.setJumpVar = true;
             this.shadowActive = true;
+            this.image = this.straightLaneImage;
         }
+        // JUMP CALCULATIONS
         if (this.jumpInProgress && !this.falling) {
-            // SET THE HEIGHT OF JUMP PER REACTION VARIABLE
-
-
-            // console.log('MAX HEIGHT:', this.maxJumpHeight, 
-            //     'MIN HEIGHT:', this.minJumpHeight, 
-            //     'JUMP DISTANCE:', this.jumpDistanceVariable,
-            //     'JUMP GRAVITY:', this.jumpGravityVariable,
-            //     'JUMP HEIGHT:', this.jumpHeightVariable,
-            //     'GAME SPEED', gameSpeed,
-            //     'PLAYER SPEED', this.playerSpeed,
-            //     this.jumpPlayerSpeedVariable);
             if (this.y > this.canvas.height - this.minJumpHeight || (this.y > this.canvas.height - this.maxHeightVariable && this.jumpInProgress)) {
                 this.y -= this.jumpDistanceVariable * frameTimeDelta * this.scaleRatio;
                     if (this.inclineAnimationTimer > 0 && this.incline) {
-                        console.log(this.inclineAnimationTimer);
-                        if (this.inclineAnimationTimer <= 400 && this.inclineAnimationTimer > 300 && this.inclineAnimationTimer >= this.maxIncline) {
+                        if (this.inclineAnimationTimer <= 100 && this.inclineAnimationTimer > 0 && this.inclineAnimationTimer <= this.maxIncline) {
                             this.image = this.inclineImages[0]
-                            console.log(1)
-                        } else if (this.inclineAnimationTimer <= 300 && this.inclineAnimationTimer > 200 && this.inclineAnimationTimer >= this.maxIncline) {
+                        } else if (this.inclineAnimationTimer <= 200 && this.inclineAnimationTimer > 100 && this.inclineAnimationTimer <= this.maxIncline) {
                             this.image = this.inclineImages[1]
-                            console.log(2)
-
-                        } else if (this.inclineAnimationTimer <= 200 && this.inclineAnimationTimer > 100 && this.inclineAnimationTimer >= this.maxIncline) {
+                        } else if (this.inclineAnimationTimer <= 300 && this.inclineAnimationTimer > 200 && this.inclineAnimationTimer <= this.maxIncline) {
                             this.image = this.inclineImages[2]
-                            console.log(3)
-
-                        } else if (this.inclineAnimationTimer <= 100 && this.inclineAnimationTimer >= 0 && this.inclineAnimationTimer >= this.maxIncline) {
+                        } else if (this.inclineAnimationTimer <= 400 && this.inclineAnimationTimer >= 300 && this.inclineAnimationTimer <= this.maxIncline) {
                             this.image = this.inclineImages[3]
-                            console.log(4)
-
                         }
-                        this.inclineAnimationTimer -= frameTimeDelta * gameSpeed * 2;
+                        this.inclineAnimationTimer += frameTimeDelta * gameSpeed * 3;
                 }
             } else {
                 this.falling = true;
                 this.wheelsDown = true;
-                this.incline = false;
-                this.inclineAnimationTimer = 400;
+                this.inclineAnimationTimer = this.maxIncline;
                 this.inclineReverse = true;
+                this.incline = false;
             }
+        // FALLING CALCULATIONS
         } else if (this.jumpInProgress && this.falling) {
              if (this.y < this.startingPositionY - this.laneHeight * this.laneIndex) {
                 this.y += this.jumpGravityVariable * frameTimeDelta * this.scaleRatio;
                 if (this.inclineAnimationTimer > 0 && this.inclineReverse) {
-                    console.log(this.inclineAnimationTimer, 'skadjf;laksd');
-                    if (this.inclineAnimationTimer <= 400 && this.inclineAnimationTimer > 300 && this.inclineAnimationTimer >= this.maxIncline) {
+                    if (this.inclineAnimationTimer <= 400 && this.inclineAnimationTimer > 300) {
                         this.image = this.inclineImages[3]
-                    } else if (this.inclineAnimationTimer <= 300 && this.inclineAnimationTimer > 200 && this.inclineAnimationTimer >= this.maxIncline) {
+                    } else if (this.inclineAnimationTimer <= 300 && this.inclineAnimationTimer > 200) {
                         this.image = this.inclineImages[2]
-                    } else if (this.inclineAnimationTimer <= 200 && this.inclineAnimationTimer > 100 && this.inclineAnimationTimer >= this.maxIncline) {
+                    } else if (this.inclineAnimationTimer <= 200 && this.inclineAnimationTimer > 100) {
                         this.image = this.inclineImages[1]
-                    } else if (this.inclineAnimationTimer <= 100 && this.inclineAnimationTimer >= 0 && this.inclineAnimationTimer >= this.maxIncline) {
+                    } else if (this.inclineAnimationTimer <= 100 && this.inclineAnimationTimer >= 0) {
                         this.image = this.inclineImages[0]
                     }
-                    console.log(this.inclineAnimationTimer);
-                    this.inclineAnimationTimer -= frameTimeDelta * gameSpeed * 2;
+                    this.inclineAnimationTimer -= frameTimeDelta * gameSpeed * 3;
                 }
                 if (this.y + this.height > this.canvas.height) {
                     this.y = this.startingPositionY - this.laneHeight * this.laneIndex;
@@ -373,19 +346,29 @@ export default class Player {
                 this.falling = false;
                 this.jumpInProgress = false;
                 this.setJumpVar = false;
-                this.inclineAnimationTimer = 400;
+                this.inclineAnimationTimer = 0;
                 this.incline = false;
                 this.inclineReverse = false;
                 this.shadowActive = false;
              }
         }
     }
-    //
+    // UPDATE
     update(gameSpeed, frameTimeDelta) {
+        // TURNING
+        if (this.moveLeft) {
+            this.image = this.turnUpImage;
+        } else if (this.moveRight) {
+            this.image = this.turnDownImage;
+        }  
+        this.turn(frameTimeDelta);
+        // JUMP
         if (this.finishLine) {
-            this.image = this.wheelieImage;        
+            this.image = this.wheelieImage;  
+            this.shadowActive = false;
         } else if (this.jumpInProgress) {
             this.jump(gameSpeed, frameTimeDelta);
+            this.image = this.straightLaneImage;
         } else if (!this.jumpInProgress && !this.falling && !this.playerWheelie && !this.playerwheelieDown) {
             this.moving(gameSpeed, frameTimeDelta);
         } else if (this.playerWheelie && !this.falling) {
@@ -393,10 +376,10 @@ export default class Player {
         } else if (this.playerwheelieDown && !this.playerWheelie && !this.falling) {
             this.wheelieDown(gameSpeed, frameTimeDelta);
         }
-        
-        this.increaseSpeed(frameTimeDelta)
-        this.decreaseSpeed(frameTimeDelta)
-        
+        // SPEED
+        this.increaseSpeed(frameTimeDelta);
+        this.decreaseSpeed(frameTimeDelta);
+        // GAS
         if (this.availableGas > 0 && this.playerWheelie && this.speedUp) {
             this.availableGas -=  .0005;
             if (this.availableGas <= 0 && this.playerWheelie) {
@@ -408,22 +391,12 @@ export default class Player {
                 this.playerResetAfterWheelie = true;
             }
         }
-
-        if (this.moveLeft) {
-            this.image = this.turnUpImage;
-        } else if (this.moveRight) {
-            this.image = this.turnDownImage;
-        }  
-        //
-        this.turn(frameTimeDelta);
-        //
-        // this.jump(frameTimeDelta)
     }
-    //
+    // DRAW
     draw() {
         this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
-
+    // RESET
     reset() {
         this.playerSpeed = this.GAME_SPEED_START;
         this.finishLine = false;
@@ -432,11 +405,9 @@ export default class Player {
         this.image = this.straightLaneImage;
         this.laneIndex = 0;
         this.keyUpSpeed = true;
-
         // RAMP ANIMATION
         this.jumpInProgress = false;
         this.falling = false;
-    
         // MOVEMENT
         this.moveLeft = false;
         this.moveRight = false;
@@ -449,23 +420,22 @@ export default class Player {
         this.playerwheelieDown = false;
         this.playerResetAfterWheelie = false;
         this.waitingToStart = true;
-
-        this.inclineAnimationTimer = 400;
-
-        obstacleReaction = null;
-        obstacleClimb = null;
-        obstacleDistance = null;
-        obstacleHeight = null;
-        obstacleWidth = null;
-
-        jumpPlayerSpeedVariable = null;
-        jumpHeightVariable = null;
-        jumpDistanceVariable = null;
-        jumpGravityVariable = null;
-        maxHeightVariable = null;
-        maxWheelie = null;
         //
-        setJumpVar = false;
-
+        this.inclineAnimationTimer = 0;
+        // RAMP VARIABLES
+        this.obstacleReaction = null;
+        this.obstacleClimb = null;
+        this.obstacleDistance = null;
+        this.obstacleHeight = null;
+        this.obstacleWidth = null;
+        // JUMP VARIABLES
+        this.jumpPlayerSpeedVariable = null;
+        this.jumpHeightVariable = null;
+        this.jumpDistanceVariable = null;
+        this.jumpGravityVariable = null;
+        this.maxHeightVariable = null;
+        this.maxWheelie = null;
+        //
+        this.setJumpVar = false;
     }
 }

@@ -57,7 +57,7 @@ const SHADOW_HEIGHT = 5;
 // ]
 
 const OBSTACLE_RAMP_CONFIG = [
-    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/RampA.png', distance: 3, climb: 4, reaction: 1, laneRestrictions:1},
+    {width: 24 / 1.5, height: 57 / 1.5, image: 'images/RampA.png', distance: 3, climb: 2, reaction: 1, laneRestrictions:1},
     {width: 72 / 1.5, height: 64, image: 'images/RampB.png', distance: 2, climb: 3, reaction: 3, laneRestrictions: 0},
     {width: 16 / 1.75, height: 40 / 2, image: 'images/RampD.png', distance: 4, climb: 1, reaction: 2, laneRestrictions: 3},
 ]
